@@ -82,7 +82,7 @@ export default function Gradivo() {
     <div className="page">
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 600, lineHeight: 1.1 }}>
-          Gradivo &<br /><span style={{ color: 'var(--accent-bright)' }}>navodila</span>
+          Gradivo & <span style={{ color: 'var(--accent-bright)' }}>navodila</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'DM Mono', marginTop: 10 }}>
           Vse kar potrebujete pred začetkom vožnje.

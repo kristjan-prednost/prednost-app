@@ -73,7 +73,7 @@ export default function Kviz({ showToast }) {
     <div className="page">
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 600, lineHeight: 1.1 }}>
-          Vadite za<br /><span style={{ color: 'var(--accent-bright)' }}>izpitna vprašanja</span>
+          Vadite za <span style={{ color: 'var(--accent-bright)' }}>izpitna vprašanja</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'DM Mono', marginTop: 10 }}>
           Kviz vsebuje 10 naključnih vprašanj iz nabora izpitnih vprašanj.

@@ -258,7 +258,7 @@ export default function Termini({ profil, showToast }) {
     <div className="page">
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 600, lineHeight: 1.1 }}>
-          Rezerviraj<br /><span style={{ color: 'var(--accent-bright)' }}>termin vožnje</span>
+          Rezerviraj <span style={{ color: 'var(--accent-bright)' }}>termin vožnje</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'DM Mono', marginTop: 10 }}>
           Izberi dan v koledarju ali uporabi puščice za navigacijo po tednih.

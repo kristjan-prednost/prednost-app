@@ -16,8 +16,20 @@ export default function Login({ onSwitch, showToast }) {
 
   return (
     <div className="auth-wrap">
-      <div className="auth-box">
-        <h1>Dobrodošel<br /><span>nazaj</span></h1>
+  <div className="auth-box" style={{ position: 'relative', overflow: 'hidden' }}>
+    <img src="/logo.png" style={{
+      position: 'absolute',
+      width: '110%',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      opacity: 0.04,
+      filter: 'hue-rotate(200deg) brightness(0.8) saturate(3)',
+      pointerEvents: 'none',
+      zIndex: 0
+    }} />
+    <div style={{ position: 'relative', zIndex: 1 }}>
+        <h1 style={{ fontWeight: 600 }}>Šola vožnje <span>Prednost</span></h1>
         <p>Prijavi se v sistem Šole vožnje Prednost.</p>
         <form onSubmit={login}>
           <div className="form-field">
@@ -34,6 +46,7 @@ export default function Login({ onSwitch, showToast }) {
           Nimaš računa? <a onClick={onSwitch}>Registracija →</a>
         </div>
       </div>
+      </div> {/* konec zIndex 1 */}
     </div>
   )
 }
