@@ -1,0 +1,22 @@
+{
+  "name": "Šola vožnje Prednost",
+  "short_name": "Prednost",
+  "description": "Sistem za rezervacijo terminov vožnje",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#080c14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
