@@ -306,3 +306,10 @@ nav {
   transition: all 0.2s;
 }
 .week-nav-btn:hover { border-color: var(--accent); color: var(--accent-bright); }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface2) inset;
+  -webkit-text-fill-color: var(--text);
+  transition: background-color 5000s ease-in-out 0s;
+}
