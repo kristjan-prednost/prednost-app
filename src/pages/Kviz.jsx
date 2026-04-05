@@ -14,7 +14,7 @@ export default function Kviz({ showToast }) {
     const { data, error } = await supabase
       .from('vprasanja')
       .select('*')
-    
+
     if (error || !data?.length) {
       showToast('Ni vprašanj v bazi. Kontaktiraj inštruktorja.', 'error')
       setLoading(false)
@@ -125,14 +125,14 @@ export default function Kviz({ showToast }) {
 
         {/* Vprašanje */}
         <div className="form-box" style={{ marginBottom: 16 }}>
-          {vpr.slika_url && (
-            <img src={vpr.slika_url} alt="Prometni znak"
-              style={{ width: '100%', maxWidth: 280, borderRadius: 10, marginBottom: 16, display: 'block', margin: '0 auto 16px' }}
-            />
-          )}
-          <p style={{ fontSize: '1rem', fontWeight: 600, lineHeight: 1.6, marginBottom: 0 }}>
+          <p style={{ fontSize: '1rem', fontWeight: 600, lineHeight: 1.6, marginBottom: 16 }}>
             {vpr.vprasanje}
           </p>
+          {vpr.slika_url && (
+            <img src={vpr.slika_url} alt="Slika"
+              style={{ width: '100%', maxWidth: 280, borderRadius: 10, display: 'block', margin: '0 auto' }}
+            />
+          )}
         </div>
 
         {/* Odgovori */}
@@ -168,12 +168,12 @@ export default function Kviz({ showToast }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.75rem', fontWeight: 500, flexShrink: 0,
                   background: izbrani !== null && i === vpr.pravilen_odgovor ? 'var(--success)' :
-                              izbrani === i ? 'var(--danger)' : 'transparent',
+                    izbrani === i ? 'var(--danger)' : 'transparent',
                   color: (izbrani !== null && (i === vpr.pravilen_odgovor || i === izbrani)) ? '#fff' : color
                 }}>
                   {izbrani !== null && i === vpr.pravilen_odgovor ? '✓' :
-                   izbrani === i && i !== vpr.pravilen_odgovor ? '✗' :
-                   String.fromCharCode(65 + i)}
+                    izbrani === i && i !== vpr.pravilen_odgovor ? '✗' :
+                      String.fromCharCode(65 + i)}
                 </span>
                 {m}
               </div>
@@ -218,41 +218,41 @@ export default function Kviz({ showToast }) {
           </div>
         </div>
 
-      {/* Pregled odgovorov */}
-      <div className="form-box" style={{ marginBottom: 20 }}>
-        <h3 style={{ marginBottom: 16 }}>PREGLED ODGOVOROV</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {odgovori.map((o, i) => (
-            <div key={i} style={{
-              background: o.pravilen ? 'rgba(34,211,238,0.06)' : 'rgba(239,68,68,0.06)',
-              border: `1px solid ${o.pravilen ? 'rgba(34,211,238,0.3)' : 'rgba(239,68,68,0.3)'}`,
-              borderRadius: 10, padding: '14px 16px'
-            }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
-                <span style={{ fontSize: '1rem' }}>{o.pravilen ? '✅' : '❌'}</span>
-                <p style={{ fontFamily: 'DM Mono', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
-                  {i + 1}. {o.vprasanje}
-                </p>
-              </div>
-              <div style={{ marginLeft: 28 }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--success)', fontFamily: 'DM Mono', marginBottom: 2 }}>
-                  ✓ Pravilen: {o.moznosti[o.pravilenIndex]}
+        {/* Pregled odgovorov */}
+        <div className="form-box" style={{ marginBottom: 20 }}>
+          <h3 style={{ marginBottom: 16 }}>PREGLED ODGOVOROV</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {odgovori.map((o, i) => (
+              <div key={i} style={{
+                background: o.pravilen ? 'rgba(34,211,238,0.06)' : 'rgba(239,68,68,0.06)',
+                border: `1px solid ${o.pravilen ? 'rgba(34,211,238,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                borderRadius: 10, padding: '14px 16px'
+              }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
+                  <span style={{ fontSize: '1rem' }}>{o.pravilen ? '✅' : '❌'}</span>
+                  <p style={{ fontFamily: 'DM Mono', fontSize: '0.82rem', lineHeight: 1.5, margin: 0 }}>
+                    {i + 1}. {o.vprasanje}
+                  </p>
                 </div>
-                {!o.pravilen && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--danger)', fontFamily: 'DM Mono' }}>
-                    ✗ Tvoj odgovor: {o.moznosti[o.izbran]}
+                <div style={{ marginLeft: 28 }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--success)', fontFamily: 'DM Mono', marginBottom: 2 }}>
+                    ✓ Pravilen: {o.moznosti[o.pravilenIndex]}
                   </div>
-                )}
+                  {!o.pravilen && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--danger)', fontFamily: 'DM Mono' }}>
+                      ✗ Tvoj odgovor: {o.moznosti[o.izbran]}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <button className="btn-primary" onClick={ponoviKviz}>
-        🔄 Ponovi kviz
-      </button>
-    </div>
-  )
+        <button className="btn-primary" onClick={ponoviKviz}>
+          🔄 Ponovi kviz
+        </button>
+      </div>
+    )
   }
 }
