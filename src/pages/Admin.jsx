@@ -4,16 +4,16 @@ import { supabase } from '../supabase'
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTHM_Ntkwpcrn7LkhoavQNLeErkoqtDaqQEZQZ03vJ4Spx1KJe-tItfjkDCw2HbN3C/exec'
 
 function dateStr_(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 function todayStr() {
   const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 function formatDatum(d) {
   const dt = new Date(d + 'T00:00:00')
-  const dni = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob']
-  const mes = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec']
+  const dni = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob']
+  const mes = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec']
   return `${dni[dt.getDay()]}, ${dt.getDate()}. ${mes[dt.getMonth()]}`
 }
 function formatCas(ts) {
@@ -93,11 +93,11 @@ function VprasanjaPanel({ showToast }) {
               placeholder="https://..." />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-            {['m0','m1','m2','m3'].map((k, i) => (
+            {['m0', 'm1', 'm2', 'm3'].map((k, i) => (
               <div key={k} className="form-field" style={{ margin: 0 }}>
-                <label>Odgovor {String.fromCharCode(65+i)} {i < 2 ? '*' : ''}</label>
+                <label>Odgovor {String.fromCharCode(65 + i)} {i < 2 ? '*' : ''}</label>
                 <input value={forma[k]} onChange={e => setForma(f => ({ ...f, [k]: e.target.value }))}
-                  placeholder={`Odgovor ${String.fromCharCode(65+i)}...`} />
+                  placeholder={`Odgovor ${String.fromCharCode(65 + i)}...`} />
               </div>
             ))}
           </div>
@@ -105,8 +105,8 @@ function VprasanjaPanel({ showToast }) {
             <label>Pravilen odgovor</label>
             <select value={forma.pravilen} onChange={e => setForma(f => ({ ...f, pravilen: e.target.value }))}
               style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px', color: 'var(--text)', fontFamily: 'DM Mono', fontSize: '0.85rem', outline: 'none', width: '100%' }}>
-              {['m0','m1','m2','m3'].map((k, i) => forma[k] && (
-                <option key={k} value={i}>Odgovor {String.fromCharCode(65+i)}: {forma[k]}</option>
+              {['m0', 'm1', 'm2', 'm3'].map((k, i) => forma[k] && (
+                <option key={k} value={i}>Odgovor {String.fromCharCode(65 + i)}: {forma[k]}</option>
               ))}
             </select>
           </div>
@@ -154,6 +154,8 @@ export default function Admin({ showToast }) {
   const [syncing, setSyncing] = useState(false)
   const [filter, setFilter] = useState('vse')
   const [selectedKandidat, setSelectedKandidat] = useState('')
+  const [iskanjeIzbris, setIskanjeIzbris] = useState('')
+  const [izbrisKandidat, setIzbrisKandidat] = useState('')
 
   useEffect(() => {
     loadData()
@@ -207,7 +209,7 @@ export default function Admin({ showToast }) {
         await supabase.from('termini').update({ zaseden: false }).eq('id', terminId)
       }
       if (gcalId) {
-        fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(gcalId)}`).catch(() => {})
+        fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(gcalId)}`).catch(() => { })
       }
       showToast('Rezervacija preklicana.')
       loadData()
@@ -247,7 +249,7 @@ export default function Admin({ showToast }) {
       } else {
         showToast('Napaka pri sinhronizaciji.', 'error')
       }
-    } catch(e) {
+    } catch (e) {
       showToast('Napaka pri sinhronizaciji: ' + e.message, 'error')
     }
     setSyncing(false)
@@ -325,7 +327,7 @@ export default function Admin({ showToast }) {
           <div style={{ position: 'relative' }}>
             <input
               value={iskanjeLimitov}
-               onChange={e => {
+              onChange={e => {
                 setIskanjeLimitov(e.target.value)
                 setSelectedKandidat('')
               }}
@@ -374,7 +376,7 @@ export default function Admin({ showToast }) {
             const limit = getLimitZaKandidata(selectedKandidat)
             return (
               <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: '16px', marginTop: 8 }}>
-               <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit - 1)} style={{
                     width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)',
@@ -433,7 +435,7 @@ export default function Admin({ showToast }) {
                     const kandId = r.profili?.id
                     const rezTaTeden = getRezervacijeZaKandidata(kandId).filter(x => {
                       const d = x.termini?.datum || ''
-                      const now = new Date(); now.setHours(0,0,0,0)
+                      const now = new Date(); now.setHours(0, 0, 0, 0)
                       const day = now.getDay() === 0 ? 7 : now.getDay()
                       const mon = new Date(now); mon.setDate(now.getDate() - day + 1)
                       const sun = new Date(now); sun.setDate(now.getDate() - day + 7)
@@ -447,7 +449,7 @@ export default function Admin({ showToast }) {
                           <div style={{ color: 'var(--muted)', fontSize: '0.72rem' }}>{r.profili?.email}</div>
                         </td>
                         <td>{r.termini?.datum ? formatDatum(r.termini.datum) : '–'}</td>
-                        <td>{r.termini?.cas_zacetek?.slice(0,5) || '–'}</td>
+                        <td>{r.termini?.cas_zacetek?.slice(0, 5) || '–'}</td>
                         <td>
                           <span style={{
                             fontSize: '0.7rem', padding: '2px 8px', borderRadius: 100,
@@ -474,52 +476,96 @@ export default function Admin({ showToast }) {
           </table>
         </div>
       </div>
-      {/* IZBRIŠI KANDIDATA */}
+      {/* ODSTRANI KANDIDATA */}
       <div className="card" style={{ marginTop: 20 }}>
         <h2>Odstrani kandidata</h2>
         <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono', marginBottom: 16, lineHeight: 1.7 }}>
           Izbriši kandidata ki je že opravil izpit. Izbrisane bodo vse njegove rezervacije in profil.
-       </p>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-         <div style={{ flex: 1 }}>
-            <select id="del-kandidat" style={{
-             background: 'var(--surface2)', border: '1px solid var(--border)',
-             borderRadius: 8, padding: '10px 12px', color: 'var(--text)',
-              fontFamily: 'DM Mono', fontSize: '0.85rem', outline: 'none', width: '100%'
-           }}>
-              <option value="">— Izberi kandidata —</option>
-              {kandidati.map(k => (
-               <option key={k.id} value={k.id}>{k.ime} {k.priimek} ({k.email})</option>
-             ))}
-           </select>
-          </div>
-          <button onClick={async () => {
-            const sel = document.getElementById('del-kandidat').value
-            if (!sel) { showToast('Izberi kandidata.', 'error'); return }
-                  const k = kandidati.find(x => x.id === sel)
-            if (!confirm(`Res želiš izbrisati kandidata ${k?.ime} ${k?.priimek}? To je nepovrativo!`)) return
-      
-           // Izbriši rezervacije
-            await supabase.from('rezervacije').delete().eq('kandidat_id', sel)
-            // Izbriši profil
-            const { error } = await supabase.from('profili').delete().eq('id', sel)
-            if (error) {
-             showToast('Napaka pri brisanju: ' + error.message, 'error')
-           } else {
-              showToast('Kandidat uspešno odstranjen.')
-              loadData()
-           }
-         }} style={{
-            padding: '10px 20px', background: 'rgba(239,68,68,0.12)',
-            color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)',
-            borderRadius: 8, fontFamily: 'Syne', fontSize: '0.88rem',
-            fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
-         }}>
-            🗑 Izbriši kandidata
-          </button>
+        </p>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <input
+            value={iskanjeIzbris}
+            onChange={e => {
+              setIskanjeIzbris(e.target.value)
+              setIzbrisKandidat('')
+            }}
+            placeholder="Išči kandidata..."
+            style={{
+              width: '100%', background: 'var(--surface2)',
+              border: '1px solid var(--border)', borderRadius: 8,
+              padding: '10px 14px', color: 'var(--text)',
+              fontFamily: 'DM Mono', fontSize: '0.85rem', outline: 'none'
+            }}
+            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+            onBlur={e => setTimeout(() => e.target.style.borderColor = 'var(--border)', 150)}
+          />
+          {iskanjeIzbris && !izbrisKandidat && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0,
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 8, marginTop: 4, zIndex: 100, overflow: 'hidden'
+            }}>
+              {kandidati
+                .filter(k => `${k.ime} ${k.priimek}`.toLowerCase().includes(iskanjeIzbris.toLowerCase()) ||
+                  k.email.toLowerCase().includes(iskanjeIzbris.toLowerCase()))
+                .map(k => (
+                  <div key={k.id}
+                    onMouseDown={() => {
+                      setIzbrisKandidat(k.id)
+                      setIskanjeIzbris(`${k.ime} ${k.priimek}`)
+                    }}
+                    style={{
+                      padding: '10px 14px', cursor: 'pointer',
+                      borderBottom: '1px solid var(--border)', fontSize: '0.85rem'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {k.ime} {k.priimek}
+                    <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontFamily: 'DM Mono', marginLeft: 8 }}>
+                      {k.email}
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+          )}
         </div>
+
+        {izbrisKandidat && (
+          <div style={{
+            background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 8, padding: '12px 16px', marginBottom: 12,
+            fontFamily: 'DM Mono', fontSize: '0.82rem', color: 'var(--muted)'
+          }}>
+            Izbran: <strong style={{ color: 'var(--text)' }}>{iskanjeIzbris}</strong>
+          </div>
+        )}
+
+        <button onClick={async () => {
+          if (!izbrisKandidat) { showToast('Izberi kandidata.', 'error'); return }
+          const k = kandidati.find(x => x.id === izbrisKandidat)
+          if (!confirm(`Res želiš izbrisati kandidata ${k?.ime} ${k?.priimek}? To je nepovrativo!`)) return
+          await supabase.from('rezervacije').delete().eq('kandidat_id', izbrisKandidat)
+          const { error } = await supabase.from('profili').delete().eq('id', izbrisKandidat)
+          if (error) {
+            showToast('Napaka pri brisanju: ' + error.message, 'error')
+          } else {
+            showToast('Kandidat uspešno odstranjen.')
+            setIskanjeIzbris('')
+            setIzbrisKandidat('')
+            loadData()
+          }
+        }} style={{
+          padding: '10px 20px', background: 'rgba(239,68,68,0.12)',
+          color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)',
+          borderRadius: 8, fontFamily: 'Syne', fontSize: '0.88rem',
+          fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
+        }}>
+          🗑 Izbriši kandidata
+        </button>
       </div>
-            {/* VPRAŠANJA ZA KVIZ */}
+      {/* VPRAŠANJA ZA KVIZ */}
       <div className="card" style={{ marginTop: 20 }}>
         <h2>Vprašanja za kviz</h2>
         <VprasanjaPanel showToast={showToast} />
