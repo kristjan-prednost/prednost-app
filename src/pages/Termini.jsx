@@ -53,7 +53,7 @@ export default function Termini({ profil, showToast }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rezervacije' }, () => loadData())
       .subscribe()
     return () => supabase.removeChannel(channel)
-  }, [])
+  }, [profil?.id])
 
   async function loadData(prvic = false) {
     if (prvic) setLoading(true)
