@@ -145,6 +145,7 @@ function VprasanjaPanel({ showToast }) {
 }
 
 export default function Admin({ showToast }) {
+  const [iskanjeLimitov, setIskanjeLimitov] = useState('')
   const [rezervacije, setRezervacije] = useState([])
   const [kandidati, setKandidati] = useState([])
   const [limiti, setLimiti] = useState({})
@@ -321,31 +322,65 @@ export default function Admin({ showToast }) {
 
         <div className="card">
           <h2>Limit po kandidatu</h2>
-          <div className="form-field">
-            <label>Izberi kandidata</label>
-            <select onChange={e => setSelectedKandidat(e.target.value)} value={selectedKandidat} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 8, padding: '10px 12px', color: 'var(--text)',
-              fontFamily: 'DM Mono', fontSize: '0.85rem', outline: 'none', width: '100%'
-            }}>
-              <option value="">— Izberi kandidata —</option>
-              {kandidati.map(k => (
-                <option key={k.id} value={k.id}>{k.ime} {k.priimek}</option>
-              ))}
-            </select>
+          <div style={{ position: 'relative' }}>
+            <input
+              value={iskanjeLimitov}
+               onChange={e => {
+                setIskanjeLimitov(e.target.value)
+                setSelectedKandidat('')
+              }}
+              placeholder="Išči kandidata..."
+              style={{
+                width: '100%', background: 'var(--surface2)',
+                border: '1px solid var(--border)', borderRadius: 8,
+                padding: '10px 14px', color: 'var(--text)',
+                fontFamily: 'DM Mono', fontSize: '0.85rem', outline: 'none'
+              }}
+              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+              onBlur={e => setTimeout(() => e.target.style.borderColor = 'var(--border)', 150)}
+            />
+            {iskanjeLimitov && !selectedKandidat && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0,
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: 8, marginTop: 4, zIndex: 100, overflow: 'hidden'
+              }}>
+                {kandidati
+                  .filter(k => `${k.ime} ${k.priimek}`.toLowerCase().includes(iskanjeLimitov.toLowerCase()))
+                  .map(k => (
+                    <div key={k.id}
+                      onMouseDown={() => {
+                        setSelectedKandidat(k.id)
+                        setIskanjeLimitov(`${k.ime} ${k.priimek}`)
+                      }}
+                      style={{
+                        padding: '10px 14px', cursor: 'pointer',
+                        borderBottom: '1px solid var(--border)',
+                        fontSize: '0.85rem'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      {k.ime} {k.priimek}
+                    </div>
+                  ))
+                }
+              </div>
+            )}
           </div>
+
           {selectedKandidat && (() => {
             const k = kandidati.find(x => x.id === selectedKandidat)
             const limit = getLimitZaKandidata(selectedKandidat)
             return (
               <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: '16px', marginTop: 8 }}>
-                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
+               <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit - 1)} style={{
                     width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)',
                     background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem'
                   }}>−</button>
-                  <span style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>
+                  <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>
                     {limit}
                   </span>
                   <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit + 1)} style={{
@@ -358,7 +393,6 @@ export default function Admin({ showToast }) {
             )
           })()}
         </div>
-
       </div>
 
       {/* REZERVACIJE */}
