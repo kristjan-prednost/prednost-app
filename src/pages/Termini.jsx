@@ -34,7 +34,7 @@ function getWeekStart(dateStr) {
 export default function Termini({ profil, showToast }) {
   const [termini, setTermini] = useState([])
   const [rezervacije, setRezervacije] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(null)
   const [booking, setBooking] = useState(false)
   const [selectedDay, setSelectedDay] = useState(null)
