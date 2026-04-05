@@ -21,6 +21,16 @@ export default function Nav({ tab, setTab, profil, isAdmin }) {
         <button className={`nav-tab ${tab === 'kviz' ? 'active' : ''}`} onClick={() => setTab('kviz')}>
           Kviz
         </button>
+        {!isAdmin && (
+          <button className={`nav-tab ${tab === 'napredek' ? 'active' : ''}`} onClick={() => setTab('napredek')}>
+            Napredek
+          </button>
+        )}
+        {isAdmin && (
+          <button className={`nav-tab ${tab === 'napredek-admin' ? 'active' : ''}`} onClick={() => setTab('napredek-admin')}>
+            Napredek Admin
+          </button>
+        )}
         {isAdmin && (
           <button className={`nav-tab ${tab === 'admin' ? 'active' : ''}`} onClick={() => setTab('admin')}>
             Admin

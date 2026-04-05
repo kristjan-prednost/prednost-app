@@ -6,7 +6,9 @@ import Nav from './components/Nav'
 import Termini from './pages/Termini'
 import Gradivo from './pages/Gradivo'
 import Kviz from './pages/Kviz'
+import Napredek from './pages/Napredek'
 import Admin from './pages/Admin'
+import NapredekAdmin from './pages/NapredekAdmin'
 import Toast from './components/Toast'
 
 export default function App() {
@@ -65,7 +67,9 @@ export default function App() {
       {tab === 'termini' && <Termini profil={profil} showToast={showToast} />}
       {tab === 'gradivo' && <Gradivo />}
       {tab === 'kviz' && <Kviz showToast={showToast} />}
+      {tab === 'napredek' && !isAdmin && <Napredek profil={profil} showToast={showToast} />}
       {tab === 'admin' && isAdmin && <Admin showToast={showToast} />}
+      {tab === 'napredek-admin' && isAdmin && <NapredekAdmin showToast={showToast} />}
       <Toast {...toast} />
     </>
   )
