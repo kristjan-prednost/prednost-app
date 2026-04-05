@@ -46,7 +46,7 @@ export default function Termini({ profil, showToast }) {
   const [weekOffset, setWeekOffset] = useState(0)
 
   useEffect(() => {
-    loadData()
+    setLoading(true)
     const channel = supabase
       .channel('termini-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'termini' }, () => loadData())
@@ -55,8 +55,8 @@ export default function Termini({ profil, showToast }) {
     return () => supabase.removeChannel(channel)
   }, [])
 
-  async function loadData() {
-    setLoading(true)
+  async function loadData(prvic = false) {
+    if (prvic) setLoading(true)
     const { data: t } = await supabase
       .from('termini')
       .select('*')
