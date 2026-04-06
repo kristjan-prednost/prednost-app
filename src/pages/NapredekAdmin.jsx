@@ -9,6 +9,7 @@ export default function NapredekAdmin({ showToast }) {
   const [izbranKandidat, setIzbranKandidat] = useState(null)
   const [napredek, setNapredek] = useState({})
   const [odprti, setOdprti] = useState({})
+  const [vsNapredek, setVsNapredek] = useState({}) // napredek vseh kandidatov
 
   useEffect(() => { loadOsnovno() }, [])
 
@@ -25,9 +26,33 @@ export default function NapredekAdmin({ showToast }) {
       .eq('vloga', 'kandidat')
       .order('priimek')
 
+    // Fetch napredek VSEH kandidatov naenkrat
+    const { data: vsNap } = await supabase
+      .from('napredek')
+      .select('*')
+
+    // Grupiramo po kandidat_id
+    const napPoKandidatu = {}
+    vsNap?.forEach(n => {
+      if (!napPoKandidatu[n.kandidat_id]) napPoKandidatu[n.kandidat_id] = []
+      napPoKandidatu[n.kandidat_id].push(n)
+    })
+
     setKategorije(kat || [])
     setKandidati(kand || [])
     setFiltrirani(kand || [])
+    setVsNapredek(napPoKandidatu)
+  }
+
+  // Izračuna status kandidata: 'vse' | 'veca_vaja' | 'delno'
+  function getKandidatStatus(kandidatId, skupajPostavk) {
+    const nap = vsNapredek[kandidatId] || []
+    if (skupajPostavk === 0) return 'delno'
+    const naucenih = nap.filter(n => n.nauceno).length
+    const imaVecoVajo = nap.some(n => n.veca_vaja)
+    if (naucenih === skupajPostavk) return 'vse'
+    if (imaVecoVajo) return 'veca_vaja'
+    return 'delno'
   }
 
   async function izberiKandidata(kandidat) {
@@ -85,6 +110,13 @@ export default function NapredekAdmin({ showToast }) {
       const novi = { ...napredek }
       delete novi[postavkaId]
       setNapredek(novi)
+
+      // Posodobi vsNapredek
+      setVsNapredek(prev => {
+        const kopija = { ...prev }
+        kopija[izbranKandidat.id] = (kopija[izbranKandidat.id] || []).filter(n => n.postavka_id !== postavkaId)
+        return kopija
+      })
     } else {
       const data = {
         kandidat_id: izbranKandidat.id,
@@ -95,6 +127,14 @@ export default function NapredekAdmin({ showToast }) {
       }
       await supabase.from('napredek').upsert(data, { onConflict: 'kandidat_id,postavka_id' })
       setNapredek(prev => ({ ...prev, [postavkaId]: data }))
+
+      // Posodobi vsNapredek
+      setVsNapredek(prev => {
+        const kopija = { ...prev }
+        const obstoječe = (kopija[izbranKandidat.id] || []).filter(n => n.postavka_id !== postavkaId)
+        kopija[izbranKandidat.id] = [...obstoječe, data]
+        return kopija
+      })
     }
     showToast('Napredek posodobljen.')
   }
@@ -102,6 +142,21 @@ export default function NapredekAdmin({ showToast }) {
   const skupajPostavk = kategorije.reduce((sum, k) => sum + (k.checklist_postavke?.length || 0), 0)
   const naucenih = Object.values(napredek).filter(n => n.nauceno).length
   const odstotek = skupajPostavk > 0 ? Math.round((naucenih / skupajPostavk) * 100) : 0
+
+  // Barvni indikator za kartico kandidata
+  function KandidatIndikator({ kandidatId }) {
+    const status = getKandidatStatus(kandidatId, skupajPostavk)
+    const barva = status === 'vse' ? 'rgba(34,211,238,0.9)' :
+                  status === 'veca_vaja' ? 'rgba(245,158,11,0.9)' :
+                  'rgba(239,68,68,0.9)'
+    return (
+      <div style={{
+        width: 10, height: 10, borderRadius: '50%',
+        background: barva, flexShrink: 0,
+        boxShadow: `0 0 6px ${barva}`
+      }} />
+    )
+  }
 
   return (
     <div className="page">
@@ -140,13 +195,17 @@ export default function NapredekAdmin({ showToast }) {
                 style={{
                   padding: '12px 18px', cursor: 'pointer',
                   borderBottom: '1px solid var(--border)',
-                  transition: 'background 0.15s'
+                  transition: 'background 0.15s',
+                  display: 'flex', alignItems: 'center', gap: 12
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{k.ime} {k.priimek}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono' }}>{k.email}</div>
+                <KandidatIndikator kandidatId={k.id} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{k.ime} {k.priimek}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: 'DM Mono' }}>{k.email}</div>
+                </div>
               </div>
             ))}
           </div>
