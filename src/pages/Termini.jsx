@@ -339,7 +339,7 @@ export default function Termini({ profil, showToast }) {
       {/* POTRDITVENI MODAL */}
       {potrjeno && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 1000, padding: 20
         }} onClick={() => setPotrjeno(null)}>

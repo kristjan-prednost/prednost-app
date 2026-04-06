@@ -110,7 +110,7 @@ export default function Kviz({ showToast }) {
               Vprašanje {trenutno + 1} / {vprasanja.length}
             </span>
             <span style={{ fontFamily: 'DM Mono', fontSize: '0.78rem', color: 'var(--accent-bright)' }}>
-              {odgovori.filter(o => o.pravilen).length} točno
+              {odgovori.filter(o => o.pravilen).length} točk
             </span>
           </div>
           <div style={{ height: 4, background: 'var(--surface2)', borderRadius: 4 }}>
