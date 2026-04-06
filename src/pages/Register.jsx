@@ -78,7 +78,7 @@ export default function Register({ onSwitch, showToast }) {
           zIndex: 0
         }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ fontWeight: 600 }}>Ustvari<br /><span>račun</span></h1>
+          <h1 style={{ fontWeight: 600 }}>Ustvari<span>račun</span></h1>
           <p>Registriraj se in rezerviraj termine vožnje.</p>
           <form onSubmit={register}>
             <div className="field-row">
