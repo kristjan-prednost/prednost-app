@@ -65,32 +65,45 @@ export default function Register({ onSwitch, showToast }) {
 
   return (
     <div className="auth-wrap">
-      <div className="auth-box">
-        <h1>Ustvari<br /><span>račun</span></h1>
-        <p>Registriraj se in rezerviraj termine vožnje.</p>
-        <form onSubmit={register}>
-          <div className="field-row">
-            <div className="form-field">
-              <label>Ime</label>
-              <input value={form.ime} onChange={e => set('ime', e.target.value)} placeholder="Ana" required />
+      <div className="auth-box" style={{ position: 'relative', overflow: 'hidden' }}>
+        <img src="/logo.png" style={{
+          position: 'absolute',
+          width: '110%',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          opacity: 0.04,
+          filter: 'hue-rotate(200deg) brightness(0.8) saturate(3)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontWeight: 600 }}>Ustvari<br /><span>račun</span></h1>
+          <p>Registriraj se in rezerviraj termine vožnje.</p>
+          <form onSubmit={register}>
+            <div className="field-row">
+              <div className="form-field">
+                <label>Ime</label>
+                <input value={form.ime} onChange={e => set('ime', e.target.value)} placeholder="Ana" required />
+              </div>
+              <div className="form-field">
+                <label>Priimek</label>
+                <input value={form.priimek} onChange={e => set('priimek', e.target.value)} placeholder="Novak" required />
+              </div>
             </div>
             <div className="form-field">
-              <label>Priimek</label>
-              <input value={form.priimek} onChange={e => set('priimek', e.target.value)} placeholder="Novak" required />
+              <label>Email</label>
+              <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="tvoj@email.com" required />
             </div>
+            <div className="form-field">
+              <label>Geslo</label>
+              <input type="password" value={form.pw} onChange={e => set('pw', e.target.value)} placeholder="Min. 6 znakov" required />
+            </div>
+            <button className="btn-primary" disabled={loading}>{loading ? 'Registriram...' : 'Registracija'}</button>
+          </form>
+          <div className="auth-link">
+            Že imaš račun? <a onClick={onSwitch}>Prijava →</a>
           </div>
-          <div className="form-field">
-            <label>Email</label>
-            <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="tvoj@email.com" required />
-          </div>
-          <div className="form-field">
-            <label>Geslo</label>
-            <input type="password" value={form.pw} onChange={e => set('pw', e.target.value)} placeholder="Min. 6 znakov" required />
-          </div>
-          <button className="btn-primary" disabled={loading}>{loading ? 'Registriram...' : 'Registracija'}</button>
-        </form>
-        <div className="auth-link">
-          Že imaš račun? <a onClick={onSwitch}>Prijava →</a>
         </div>
       </div>
     </div>
