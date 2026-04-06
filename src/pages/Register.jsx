@@ -4,6 +4,7 @@ import { supabase } from '../supabase'
 export default function Register({ onSwitch, showToast }) {
   const [form, setForm] = useState({ ime: '', priimek: '', email: '', pw: '' })
   const [loading, setLoading] = useState(false)
+  const [cakaNaVerifikacijo, setCakaNaVerifikacijo] = useState(false)
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
 
@@ -16,10 +17,8 @@ export default function Register({ onSwitch, showToast }) {
       email: form.email,
       password: form.pw,
       options: {
-        data: {
-          ime: form.ime,
-          priimek: form.priimek
-        }
+        data: { ime: form.ime, priimek: form.priimek },
+        emailRedirectTo: 'https://prednost-termini.si'
       }
     })
 
@@ -39,8 +38,29 @@ export default function Register({ onSwitch, showToast }) {
       }, { onConflict: 'id' })
     }
 
-    showToast('Registracija uspešna!')
     setLoading(false)
+    setCakaNaVerifikacijo(true)
+  }
+
+  if (cakaNaVerifikacijo) {
+    return (
+      <div className="auth-wrap">
+        <div className="auth-box" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>✉️</div>
+          <h1 style={{ fontWeight: 600, marginBottom: 12 }}>Preveri <span>email</span></h1>
+          <p style={{ color: 'var(--muted)', lineHeight: 1.6, marginBottom: 24 }}>
+            Poslali smo ti potrditveni email na<br />
+            <strong style={{ color: 'var(--text)' }}>{form.email}</strong>
+          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6 }}>
+            Klikni na povezavo v emailu da aktiviraš račun. Po aktivaciji se lahko prijaviš.
+          </p>
+          <div className="auth-link" style={{ marginTop: 24 }}>
+            <a onClick={onSwitch} style={{ cursor: 'pointer' }}>Pojdi na prijavo →</a>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

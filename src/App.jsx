@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ResetGesla from './pages/ResetGesla'
 import Nav from './components/Nav'
 import Termini from './pages/Termini'
 import Gradivo from './pages/Gradivo'
@@ -18,16 +19,23 @@ export default function App() {
   const [authView, setAuthView] = useState('login')
   const [toast, setToast] = useState({ msg: '', type: 'success', show: false })
   const [loading, setLoading] = useState(true)
+  const [jeResetStran, setJeResetStran] = useState(false)
 
   useEffect(() => {
+    // Preveri če je to reset-gesla stran (Supabase doda #access_token v URL)
+    const hash = window.location.hash
+    const isReset = hash.includes('type=recovery')
+    setJeResetStran(isReset)
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
-      if (data.session) loadProfil(data.session.user.id)
+      if (data.session && !isReset) loadProfil(data.session.user.id)
       else setLoading(false)
     })
+
     const { data: listener } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s)
-      if (s) loadProfil(s.user.id)
+      if (s && !jeResetStran) loadProfil(s.user.id)
       else { setProfil(null); setLoading(false) }
     })
     return () => listener.subscription.unsubscribe()
@@ -48,6 +56,14 @@ export default function App() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ fontFamily: 'DM Mono', color: 'var(--muted)', fontSize: '0.85rem' }}>Nalaganje...</div>
     </div>
+  )
+
+  // Reset gesla stran
+  if (jeResetStran) return (
+    <>
+      <ResetGesla showToast={showToast} />
+      <Toast {...toast} />
+    </>
   )
 
   if (!session) return (
