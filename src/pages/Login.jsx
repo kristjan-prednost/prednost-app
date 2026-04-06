@@ -68,19 +68,32 @@ export default function Login({ onSwitch, showToast }) {
             </>
           ) : (
             <>
-              <h1 style={{ fontWeight: 600 }}>Ponastavi <span>geslo</span></h1>
-              <p>Vnesi svoj email in poslali ti bomo povezavo za ponastavitev.</p>
-              <form onSubmit={posljiReset}>
-                <div className="form-field">
-                  <label>Email</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tvoj@email.com" required />
+              <img src="/logo.png" style={{
+                position: 'absolute',
+                width: '110%',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                opacity: 0.04,
+                filter: 'hue-rotate(200deg) brightness(0.8) saturate(3)',
+                pointerEvents: 'none',
+                zIndex: 0
+              }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <h1 style={{ fontWeight: 600 }}>Ponastavi <span>geslo</span></h1>
+                <p>Vnesi svoj email in poslali ti bomo povezavo za ponastavitev.</p>
+                <form onSubmit={posljiReset}>
+                  <div className="form-field">
+                    <label>Email</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tvoj@email.com" required />
+                  </div>
+                  <button className="btn-primary" disabled={resetLoading}>
+                    {resetLoading ? 'Pošiljam...' : 'Pošlji povezavo'}
+                  </button>
+                </form>
+                <div className="auth-link" style={{ marginTop: 12 }}>
+                  <a onClick={() => setResetMode(false)} style={{ cursor: 'pointer' }}>← Nazaj na prijavo</a>
                 </div>
-                <button className="btn-primary" disabled={resetLoading}>
-                  {resetLoading ? 'Pošiljam...' : 'Pošlji povezavo'}
-                </button>
-              </form>
-              <div className="auth-link" style={{ marginTop: 12 }}>
-                <a onClick={() => setResetMode(false)} style={{ cursor: 'pointer' }}>← Nazaj na prijavo</a>
               </div>
             </>
           )}
