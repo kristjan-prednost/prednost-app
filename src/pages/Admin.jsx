@@ -546,8 +546,8 @@ export default function Admin({ showToast }) {
           if (!izbrisKandidat) { showToast('Izberi kandidata.', 'error'); return }
           const k = kandidati.find(x => x.id === izbrisKandidat)
           if (!confirm(`Res želiš izbrisati kandidata ${k?.ime} ${k?.priimek}? To je nepovrativo!`)) return
-          await supabase.from('rezervacije').delete().eq('kandidat_id', izbrisKandidat)
-          const { error } = await supabase.from('profili').delete().eq('id', izbrisKandidat)
+          console.log('Brišem kandidata z ID:', izbrisKandidat, typeof izbrisKandidat)
+          const { error } = await supabase.rpc('izbrisi_kandidata', { kandidat_id: izbrisKandidat })
           if (error) {
             showToast('Napaka pri brisanju: ' + error.message, 'error')
           } else {
