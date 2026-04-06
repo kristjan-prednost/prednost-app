@@ -31,7 +31,7 @@ export default function Login({ onSwitch, showToast }) {
 
   return (
     <div className="auth-wrap">
-      <div className="auth-box" style={{ position: 'relative', overflow: 'hidden' }}>
+      <div className="auth-box" style={{ position: 'relative', overflow: 'hidden', minHeight: 420 }}>
         <img src="/logo.png" style={{
           position: 'absolute',
           width: '110%',
