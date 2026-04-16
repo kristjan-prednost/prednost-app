@@ -26,13 +26,16 @@ function App() {
   }, [])
 
   async function naložiProfil(uid) {
-    const { data } = await supabase
-      .from('profili')
-      .select('*')
-      .eq('id', uid)
-      .single()
-    setProfil(data)
-    setNalaga(false)
+  const { data } = await supabase
+    .from('profili')
+    .select('*')
+    .eq('id', uid)
+    .single()
+  
+  // Dodaj email iz auth
+  const { data: { user } } = await supabase.auth.getUser()
+  setProfil({ ...data, email: user?.email })
+  setNalaga(false)
   }
 
   async function odjava() {
@@ -73,16 +76,16 @@ function App() {
       </nav>
 
       <main>
-        {zavihek === 'booking' && <div><h2>Rezervacija terminov</h2><p>Kmalu...</p></div>}
+        {zavihek === 'booking' && <Termini profil={profil} />}
         {zavihek === 'gradivo' && <div><h2>Gradivo</h2><p>Kmalu...</p></div>}
         {zavihek === 'posnetki' && <div><h2>Posnetki</h2><p>Kmalu...</p></div>}
         {zavihek === 'kviz' && <div><h2>Kviz</h2><p>Kmalu...</p></div>}
-        {zavihek === 'admin' && profil?.vloga === 'admin' && (
-          <div><h2>Admin</h2><p>Tukaj bo nadzorna plošča.</p></div>
-        )}
+        {zavihek === 'admin' && profil?.vloga === 'admin' && <Admin />}
       </main>
     </div>
   )
 }
 
 export default App
+import Termini from './Termini'
+import Admin from './Admin'
