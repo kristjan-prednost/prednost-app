@@ -9,6 +9,8 @@ self.addEventListener('activate', event => {
 })
 
 self.addEventListener('fetch', event => {
+  // Ne prestrezaj Supabase klicev
+  if (event.request.url.includes('supabase.co')) return
   event.respondWith(fetch(event.request))
 })
 
