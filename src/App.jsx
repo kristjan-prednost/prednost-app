@@ -50,7 +50,7 @@ function App() {
   async function naložiProfil(uid) {
     const { data } = await supabase.from('profili').select('*').eq('id', uid).single()
     const { data: { user } } = await supabase.auth.getUser()
-    setProfil({ ...data, email: user?.email })
+    setProfil(data)
     setNalaga(false)
   }
 
