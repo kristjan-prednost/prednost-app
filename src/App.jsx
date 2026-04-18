@@ -148,7 +148,7 @@ function App() {
       </nav>
 
       <main>
-        {zavihek === 'booking' && <Termini profil={profil} />}
+        {zavihek === 'booking' && profil && <Termini profil={profil} />}
         {zavihek === 'gradivo' && <div><h2>Gradivo</h2><p>Kmalu...</p></div>}
         {zavihek === 'posnetki' && <div><h2>Posnetki</h2><p>Kmalu...</p></div>}
         {zavihek === 'kviz' && <div><h2>Kviz</h2><p>Kmalu...</p></div>}
