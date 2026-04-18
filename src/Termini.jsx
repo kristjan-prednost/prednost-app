@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
+import { supabase } from './supabase'
 
 const MESECI = ['Januar','Februar','Marec','April','Maj','Junij','Julij','Avgust','September','Oktober','November','December']
 const DNI = ['Pon','Tor','Sre','Čet','Pet','Sob','Ned']
