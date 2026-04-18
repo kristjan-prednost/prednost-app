@@ -9,62 +9,90 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { tip } = await req.json()
+    const { tip, termin_datum, termin_cas } = await req.json()
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
-    // Pridobi vse subscriptions
-    const rezRes = await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?select=*`, {
+    // Pridobi vse kandidate
+    const kandRes = await fetch(`${SUPABASE_URL}/rest/v1/profili?vloga=eq.kandidat&select=email,ime,priimek`, {
       headers: {
         'apikey': SUPABASE_SERVICE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
       }
     })
-    const subscriptions = await rezRes.json()
+    const kandidati = await kandRes.json()
 
-    if (!subscriptions || subscriptions.length === 0) {
+    if (!kandidati || kandidati.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    let title = '📅 Nov prost termin!'
-    let body = 'Sprostil se je termin vožnje. Prijavi se na prednost-termini.si'
+    let subject = ''
+    let html = ''
 
-    if (tip === 'opomnik') {
-      title = '🚗 Opomnik – vožnja jutri!'
-      body = 'Jutri imaš termin vožnje v Šoli vožnje Prednost.'
+    if (tip === 'prost_termin') {
+      subject = '📅 Sprostil se je termin vožnje – Šola vožnje Prednost'
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: #3b82f6;">Sprostil se je termin vožnje!</h2>
+          <p>Pozdravljeni,</p>
+          <p>obvestiti vas želimo, da se je sprostil termin vožnje.</p>
+          <p>Prijavite se čim prej na <a href="https://prednost-termini.si" style="color: #3b82f6;">prednost-termini.si</a> in rezervirajte termin.</p>
+          <p>Srečno pri vožnji! 🚗</p>
+          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
+        </div>
+      `
+    } else if (tip === 'opomnik') {
+      subject = '🚗 Opomnik – jutri imaš termin vožnje'
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: #3b82f6;">Opomnik za termin vožnje</h2>
+          <p>Pozdravljeni,</p>
+          <p>jutri imaš termin vožnje ob <strong>${termin_cas}</strong>.</p>
+          <p>Datum: <strong>${termin_datum}</strong></p>
+          <p>Srečno! 🚗</p>
+          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
+        </div>
+      `
     }
 
-    console.log(`Pošiljam ${subscriptions.length} notifikacij, tip: ${tip}`)
-
+    // Pošlji email vsakemu kandidatu
     let sent = 0
-    for (const sub of subscriptions) {
+    for (const k of kandidati) {
       try {
-        const subscription = sub.subscription
-        const payload = JSON.stringify({ title, body, url: 'https://prednost-termini.si' })
-
-        const response = await fetch(subscription.endpoint, {
+        const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/octet-stream',
-            'TTL': '86400',
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
           },
-          body: payload
+          body: JSON.stringify({
+            from: 'Šola vožnje Prednost <noreply@prednost-termini.si>',
+            to: k.email,
+            subject,
+            html
+          })
         })
-        console.log(`Push response: ${response.status}`)
-        if (response.ok) sent++
+        if (res.ok) sent++
+        else {
+          const err = await res.text()
+          console.error(`Napaka za ${k.email}:`, err)
+        }
       } catch(e) {
-        console.error('Napaka:', e)
+        console.error('Fetch napaka:', e)
       }
     }
 
+    console.log(`Poslano ${sent}/${kandidati.length} emailov`)
     return new Response(JSON.stringify({ sent }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
+
   } catch(e) {
-    console.error('Glavna napaka:', e)
+    console.error('Glavna napaka:', String(e))
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
