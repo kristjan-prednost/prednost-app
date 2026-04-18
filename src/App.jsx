@@ -12,6 +12,17 @@ import Admin from './pages/Admin'
 import NapredekAdmin from './pages/NapredekAdmin'
 import Toast from './components/Toast'
 
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+  return outputArray
+}
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [profil, setProfil] = useState(null)
@@ -20,9 +31,10 @@ export default function App() {
   const [toast, setToast] = useState({ msg: '', type: 'success', show: false })
   const [loading, setLoading] = useState(true)
   const [jeResetStran, setJeResetStran] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
 
   useEffect(() => {
-    // Preveri če je to reset-gesla stran (Supabase doda #access_token v URL)
     const hash = window.location.hash
     const isReset = hash.includes('type=recovery')
     setJeResetStran(isReset)
@@ -41,10 +53,48 @@ export default function App() {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    if ('Notification' in window) {
+      setPushEnabled(Notification.permission === 'granted')
+    }
+  }, [])
+
   async function loadProfil(uid) {
     const { data } = await supabase.from('profili').select('*').eq('id', uid).single()
     setProfil(data)
     setLoading(false)
+  }
+
+  async function vklopiNotifikacije() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showToast('Tvoj brskalnik ne podpira push notifikacij.', 'error')
+      return
+    }
+    setPushLoading(true)
+    try {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        showToast('Notifikacije so onemogočene v nastavitvah brskalnika.', 'error')
+        setPushLoading(false)
+        return
+      }
+      const reg = await navigator.serviceWorker.ready
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      })
+      const { data: { user } } = await supabase.auth.getUser()
+      await supabase.from('push_subscriptions').upsert({
+        kandidat_id: user.id,
+        subscription: subscription.toJSON()
+      }, { onConflict: 'kandidat_id' })
+      setPushEnabled(true)
+      showToast('Obvestila so vklopljena! 🔔')
+    } catch(e) {
+      console.error('Push napaka:', e)
+      showToast('Napaka pri vklopu obvestil.', 'error')
+    }
+    setPushLoading(false)
   }
 
   function showToast(msg, type = 'success') {
@@ -58,7 +108,6 @@ export default function App() {
     </div>
   )
 
-  // Reset gesla stran
   if (jeResetStran) return (
     <>
       <ResetGesla showToast={showToast} />
@@ -79,7 +128,11 @@ export default function App() {
 
   return (
     <>
-      <Nav tab={tab} setTab={setTab} profil={profil} isAdmin={isAdmin} />
+      <Nav
+        tab={tab} setTab={setTab} profil={profil} isAdmin={isAdmin}
+        pushEnabled={pushEnabled} pushLoading={pushLoading}
+        onPush={vklopiNotifikacije}
+      />
       {tab === 'termini' && <Termini profil={profil} showToast={showToast} />}
       {tab === 'gradivo' && <Gradivo />}
       {tab === 'kviz' && <Kviz showToast={showToast} />}

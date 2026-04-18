@@ -30,8 +30,8 @@ function KandidatSelector({ kandidati, value, label, onSelect, placeholder = 'I≈
   const izbran = kandidati.find(k => k.id === value)
   const filtrirani = iskanje
     ? kandidati.filter(k =>
-        `${k.ime} ${k.priimek}`.toLowerCase().includes(iskanje.toLowerCase()) ||
-        k.email.toLowerCase().includes(iskanje.toLowerCase()))
+      `${k.ime} ${k.priimek}`.toLowerCase().includes(iskanje.toLowerCase()) ||
+      k.email.toLowerCase().includes(iskanje.toLowerCase()))
     : kandidati
 
   function izberi(k) {
@@ -271,7 +271,17 @@ export default function Admin({ showToast }) {
     const { error } = await supabase.from('rezervacije').delete().eq('id', id)
     if (error) { showToast('Napaka pri preklicu.', 'error'); return }
     if (rez?.termin_id) await supabase.from('termini').update({ zaseden: false }).eq('id', rez.termin_id)
-    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => {})
+    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => { })
+
+    // Po≈°lji push notifikacijo vsem kandidatom
+    try {
+      await supabase.functions.invoke('send-push', {
+        body: { tip: 'prost_termin' }
+      })
+    } catch (e) {
+      console.error('Push napaka:', e)
+    }
+
     showToast('Rezervacija preklicana.')
     loadData()
   }

@@ -1,6 +1,6 @@
 import { supabase } from '../supabase'
 
-export default function Nav({ tab, setTab, profil, isAdmin }) {
+export default function Nav({ tab, setTab, profil, isAdmin, pushEnabled, pushLoading, onPush }) {
   async function logout() {
     await supabase.auth.signOut()
   }
@@ -28,7 +28,7 @@ export default function Nav({ tab, setTab, profil, isAdmin }) {
         )}
         {isAdmin && (
           <button className={`nav-tab ${tab === 'napredek-admin' ? 'active' : ''}`} onClick={() => setTab('napredek-admin')}>
-            Napredek Admin
+            Napredek
           </button>
         )}
         {isAdmin && (
@@ -38,6 +38,25 @@ export default function Nav({ tab, setTab, profil, isAdmin }) {
         )}
       </div>
       <div className="nav-right">
+        {!isAdmin && !pushEnabled && (
+          <button
+            onClick={onPush}
+            disabled={pushLoading}
+            style={{
+              background: 'rgba(59,130,246,0.15)',
+              border: '1px solid rgba(59,130,246,0.4)',
+              borderRadius: 8,
+              padding: '6px 12px',
+              color: '#60a5fa',
+              fontSize: '0.78rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {pushLoading ? '...' : '🔔 Obvestila'}
+          </button>
+        )}
         <span className="nav-user">{profil?.ime} {profil?.priimek}</span>
         <button className="btn-logout" onClick={logout}>Odjava</button>
       </div>
