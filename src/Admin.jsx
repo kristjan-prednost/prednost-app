@@ -94,6 +94,16 @@ export default function Admin() {
       if (res.success) {
         setRezervacije(prev => prev.filter(r => r.slotId !== rez.slotId))
         setSporocilo({ tip: 'uspeh', tekst: `Rezervacija za ${rez.ime} preklicana.` })
+
+        // Pošlji push notifikacijo vsem kandidatom
+        try {
+          await supabase.functions.invoke('send-push', {
+            body: { tip: 'prost_termin' }
+          })
+        } catch (e) {
+          console.error('Push napaka:', e)
+        }
+
       } else {
         setSporocilo({ tip: 'napaka', tekst: 'Napaka pri preklicu.' })
       }
@@ -110,8 +120,8 @@ export default function Admin() {
 
   function porabaVTednu(ime) {
     const danes = new Date()
-    const d = String(danes.getDate()).padStart(2,'0')
-    const m = String(danes.getMonth()+1).padStart(2,'0')
+    const d = String(danes.getDate()).padStart(2, '0')
+    const m = String(danes.getMonth() + 1).padStart(2, '0')
     const y = danes.getFullYear()
     const teden = isoTeden(`${d}.${m}.${y}`)
     return rezervacije.filter(r => r.ime === ime && r.datum && isoTeden(r.datum) === teden).length
@@ -149,7 +159,7 @@ export default function Admin() {
       <div className="admin-sekcija">
         <h3 className="admin-naslov">Izjeme po kandidatu</h3>
         <div className="admin-kartica">
-          <p className="nastav-opis" style={{marginBottom: '12px'}}>Nastavi drugačno omejitev za posameznega kandidata.</p>
+          <p className="nastav-opis" style={{ marginBottom: '12px' }}>Nastavi drugačno omejitev za posameznega kandidata.</p>
           <div className="omejitev-vnosna">
             <input
               className="admin-input"
@@ -204,7 +214,7 @@ export default function Admin() {
                       <tr key={rez.slotId} className={prekoračen ? 'rez-prekoracen' : ''}>
                         <td>{rez.ime}</td>
                         <td>{rez.datum ? rez.datum : '—'}</td>
-                        <td>{rez.timeStart ? String(rez.timeStart).slice(0,5) : '—'}</td>
+                        <td>{rez.timeStart ? String(rez.timeStart).slice(0, 5) : '—'}</td>
                         <td>
                           <button
                             className="gumb-preklic-admin"
