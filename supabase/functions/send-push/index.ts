@@ -9,15 +9,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { tip, termin_datum, termin_cas } = await req.json()
+    const { tip, kandidat_id, termin_datum, termin_cas } = await req.json()
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
-    // Pridobi vse kandidate
-    // TESTNI NAČIN - samo en email
-    const kandRes = await fetch(`${SUPABASE_URL}/rest/v1/profili?vloga=eq.kandidat&email=eq.lol4just@gmail.com&select=email,ime,priimek`, {
+    // Pridobi kandidate — če je kandidat_id podan, samo tega, sicer vse
+    const filter = kandidat_id
+      ? `vloga=eq.kandidat&id=eq.${kandidat_id}`
+      : `vloga=eq.kandidat`
+
+    const kandRes = await fetch(`${SUPABASE_URL}/rest/v1/profili?${filter}&select=email,ime,priimek`, {
       headers: {
         'apikey': SUPABASE_SERVICE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
@@ -60,7 +63,6 @@ Deno.serve(async (req) => {
       `
     }
 
-    // Pošlji email vsakemu kandidatu
     let sent = 0
     for (const k of kandidati) {
       try {
@@ -82,17 +84,17 @@ Deno.serve(async (req) => {
           const err = await res.text()
           console.error(`Napaka za ${k.email}:`, err)
         }
-      } catch (e) {
+      } catch(e) {
         console.error('Fetch napaka:', e)
       }
     }
 
-    console.log(`Poslano ${sent}/${kandidati.length} emailov`)
+    console.log(`Poslano ${sent}/${kandidati.length} emailov, tip: ${tip}`)
     return new Response(JSON.stringify({ sent }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
-  } catch (e) {
+  } catch(e) {
     console.error('Glavna napaka:', String(e))
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
