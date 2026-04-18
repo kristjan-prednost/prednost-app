@@ -16,7 +16,8 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
     // Pridobi vse kandidate
-    const kandRes = await fetch(`${SUPABASE_URL}/rest/v1/profili?vloga=eq.kandidat&select=email,ime,priimek`, {
+    // TESTNI NAČIN - samo en email
+    const kandRes = await fetch(`${SUPABASE_URL}/rest/v1/profili?vloga=eq.kandidat&email=eq.lol4just@gmail.com&select=email,ime,priimek`, {
       headers: {
         'apikey': SUPABASE_SERVICE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
           const err = await res.text()
           console.error(`Napaka za ${k.email}:`, err)
         }
-      } catch(e) {
+      } catch (e) {
         console.error('Fetch napaka:', e)
       }
     }
@@ -91,7 +92,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
-  } catch(e) {
+  } catch (e) {
     console.error('Glavna napaka:', String(e))
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
