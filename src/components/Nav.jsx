@@ -18,6 +18,9 @@ export default function Nav({ tab, setTab, profil, isAdmin, pushEnabled, pushLoa
         <button className={`nav-tab ${tab === 'gradivo' ? 'active' : ''}`} onClick={() => setTab('gradivo')}>
           Gradivo
         </button>
+        <button className={`nav-tab ${tab === 'placila' ? 'active' : ''}`} onClick={() => setTab('placila')}>
+          Plačila
+        </button>
         <button className={`nav-tab ${tab === 'kviz' ? 'active' : ''}`} onClick={() => setTab('kviz')}>
           Kviz
         </button>

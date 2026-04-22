@@ -6,6 +6,7 @@ import ResetGesla from './pages/ResetGesla'
 import Nav from './components/Nav'
 import Termini from './pages/Termini'
 import Gradivo from './pages/Gradivo'
+import Placila from './pages/Placila'
 import Kviz from './pages/Kviz'
 import Napredek from './pages/Napredek'
 import Admin from './pages/Admin'
@@ -135,6 +136,7 @@ export default function App() {
       />
       {tab === 'termini' && <Termini profil={profil} showToast={showToast} />}
       {tab === 'gradivo' && <Gradivo />}
+      {tab === 'placila' && <Placila />}
       {tab === 'kviz' && <Kviz showToast={showToast} />}
       {tab === 'napredek' && !isAdmin && <Napredek profil={profil} showToast={showToast} />}
       {tab === 'admin' && isAdmin && <Admin showToast={showToast} />}
