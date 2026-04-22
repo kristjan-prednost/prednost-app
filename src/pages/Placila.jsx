@@ -1,37 +1,7 @@
 import { useState } from 'react'
 
-// UPN QR generator - generira QR kodo iz UPN podatkov
-function UPNQRCode({ iban, znesek, namen, referenca, prejemnik, naslov, kraj }) {
-  const znesekCents = Math.round(znesek * 100)
-  const znesekStr = String(znesekCents).padStart(11, '0')
-  
-  // UPN QR format
-  const upnData = [
-    'UPNQR',
-    '', '', '', '', // plačnik prazno
-    'X',
-    znesekStr,
-    '',
-    '',
-    namen,
-    referenca.replace('SI', 'SI').replace(' ', ''),
-    iban.replace(/ /g, ''),
-    prejemnik,
-    naslov,
-    kraj
-  ].join('\n') + '\n'
-
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upnData)}`
-
-  return (
-    <img src={qrUrl} alt="UPN QR koda" style={{ width: 180, height: 180, borderRadius: 8 }} />
-  )
-}
-
 const PREJEMNIK = 'PREDNOST d.o.o.'
-const NASLOV = 'BRESNICA 5/A'
-const KRAJ = '2273 PODGORCI'
-const IBAN = 'SI56041030000248937'
+const IBAN = 'SI56 0410 3000 0248 937'
 
 export default function Placila() {
   const [ure, setUre] = useState(10)
@@ -53,14 +23,11 @@ export default function Placila() {
       {/* MOTO URE */}
       <div className="form-box" style={{ marginBottom: 20 }}>
         <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 20, color: 'var(--text)' }}>
-          🏍️ Moto ure
+          🚗 Moto ure
         </h3>
 
         {/* Kalkulator */}
-        <div style={{
-          background: 'var(--surface2)', borderRadius: 12,
-          padding: '20px', marginBottom: 20
-        }}>
+        <div style={{ background: 'var(--surface2)', borderRadius: 12, padding: '20px', marginBottom: 20 }}>
           <p style={{ fontSize: '0.8rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 14 }}>
             Kalkulator ur
           </p>
@@ -78,12 +45,9 @@ export default function Placila() {
             }}>+</button>
             <span style={{ color: 'var(--muted)', fontSize: '0.85rem', fontFamily: 'DM Mono' }}>ur</span>
           </div>
-
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <div style={{ fontFamily: 'DM Mono', fontSize: '0.82rem', color: 'var(--muted)' }}>
-              {ure >= 20
-                ? '✅ Paketni popust — 42 €/uro'
-                : `${ure < 20 ? `Še ${20 - ure} ur do paketnega popusta` : ''} — 43 €/uro`}
+              {ure >= 20 ? '✅ Paketni popust — 42 €/uro' : `Še ${20 - ure} ur do paketnega popusta — 43 €/uro`}
             </div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-bright)' }}>
               {skupaj} €
@@ -94,19 +58,11 @@ export default function Placila() {
         {/* QR + podatki */}
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flexShrink: 0 }}>
-            <UPNQRCode
-              iban={IBAN}
-              znesek={skupaj}
-              namen="Moto ure"
-              referenca="SI00008"
-              prejemnik={PREJEMNIK}
-              naslov={NASLOV}
-              kraj={KRAJ}
-            />
+            <img src="/slike/qr-moto.png" alt="QR moto ure" style={{ width: 180, height: 180, borderRadius: 8 }} />
           </div>
           <div style={{ fontFamily: 'DM Mono', fontSize: '0.8rem', lineHeight: 2, color: 'var(--muted)' }}>
             <div><span style={{ color: 'var(--text)' }}>Prejemnik:</span> {PREJEMNIK}</div>
-            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> SI56 0410 3000 0248 937</div>
+            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> {IBAN}</div>
             <div><span style={{ color: 'var(--text)' }}>Namen:</span> Moto ure</div>
             <div><span style={{ color: 'var(--text)' }}>Referenca:</span> SI00 008</div>
             <div><span style={{ color: 'var(--accent-bright)', fontSize: '1rem', fontWeight: 700 }}>Znesek: {skupaj} €</span></div>
@@ -117,23 +73,15 @@ export default function Placila() {
       {/* PREIZKUSNA VOŽNJA */}
       <div className="form-box" style={{ marginBottom: 20 }}>
         <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 20, color: 'var(--text)' }}>
-          🚗 Preizkusna vožnja
+          🎓 Preizkusna vožnja
         </h3>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flexShrink: 0 }}>
-            <UPNQRCode
-              iban={IBAN}
-              znesek={25}
-              namen="preizkus"
-              referenca="SI99"
-              prejemnik={PREJEMNIK}
-              naslov={NASLOV}
-              kraj={KRAJ}
-            />
+            <img src="/slike/qr-preizkus.png" alt="QR preizkus" style={{ width: 180, height: 180, borderRadius: 8 }} />
           </div>
           <div style={{ fontFamily: 'DM Mono', fontSize: '0.8rem', lineHeight: 2, color: 'var(--muted)' }}>
             <div><span style={{ color: 'var(--text)' }}>Prejemnik:</span> {PREJEMNIK}</div>
-            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> SI56 0410 3000 0248 937</div>
+            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> {IBAN}</div>
             <div><span style={{ color: 'var(--text)' }}>Namen:</span> preizkus</div>
             <div><span style={{ color: 'var(--text)' }}>Referenca:</span> SI99</div>
             <div><span style={{ color: 'var(--accent-bright)', fontSize: '1rem', fontWeight: 700 }}>Znesek: 25,00 €</span></div>
@@ -148,19 +96,11 @@ export default function Placila() {
         </h3>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flexShrink: 0 }}>
-            <UPNQRCode
-              iban={IBAN}
-              znesek={25}
-              namen="čakalna ura"
-              referenca="SI99"
-              prejemnik={PREJEMNIK}
-              naslov={NASLOV}
-              kraj={KRAJ}
-            />
+            <img src="/slike/qr-cakalna.png" alt="QR čakalna" style={{ width: 180, height: 180, borderRadius: 8 }} />
           </div>
           <div style={{ fontFamily: 'DM Mono', fontSize: '0.8rem', lineHeight: 2, color: 'var(--muted)' }}>
             <div><span style={{ color: 'var(--text)' }}>Prejemnik:</span> {PREJEMNIK}</div>
-            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> SI56 0410 3000 0248 937</div>
+            <div><span style={{ color: 'var(--text)' }}>IBAN:</span> {IBAN}</div>
             <div><span style={{ color: 'var(--text)' }}>Namen:</span> čakalna ura</div>
             <div><span style={{ color: 'var(--text)' }}>Referenca:</span> SI99</div>
             <div><span style={{ color: 'var(--accent-bright)', fontSize: '1rem', fontWeight: 700 }}>Znesek: 25,00 €</span></div>
