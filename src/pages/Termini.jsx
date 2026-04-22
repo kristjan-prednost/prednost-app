@@ -3,26 +3,26 @@ import { supabase } from '../supabase'
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTHM_Ntkwpcrn7LkhoavQNLeErkoqtDaqQEZQZ03vJ4Spx1KJe-tItfjkDCw2HbN3C/exec'
 
-const MESECI = ['Januar','Februar','Marec','April','Maj','Junij','Julij','Avgust','September','Oktober','November','December']
-const DNI = ['Pon','Tor','Sre','Čet','Pet','Sob','Ned']
+const MESECI = ['Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December']
+const DNI = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned']
 
 function dateStr_(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 function todayStr() {
   const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 function formatDatum(d) {
   const dt = new Date(d + 'T00:00:00')
-  const dni = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob']
-  const mes = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec']
+  const dni = ['Ned', 'Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob']
+  const mes = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec']
   return `${dni[dt.getDay()]}, ${dt.getDate()}. ${mes[dt.getMonth()]}`
 }
 function addMinutes(t, m) {
   const [h, min] = t.split(':').map(Number)
   const tot = h * 60 + min + m
-  return `${String(Math.floor(tot/60)).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`
+  return `${String(Math.floor(tot / 60)).padStart(2, '0')}:${String(tot % 60).padStart(2, '0')}`
 }
 function getWeekStart(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -73,7 +73,7 @@ export default function Termini({ profil, showToast }) {
 
   function getWeekDates() {
     const d = new Date()
-    d.setHours(0,0,0,0)
+    d.setHours(0, 0, 0, 0)
     const day = d.getDay() === 0 ? 7 : d.getDay()
     d.setDate(d.getDate() - day + 1 + weekOffset * 7)
     const dates = []
@@ -121,15 +121,15 @@ export default function Termini({ profil, showToast }) {
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <button className="week-nav-btn" onClick={() => {
-            if (calMonth === 0) { setCalMonth(11); setCalYear(y => y-1) }
-            else setCalMonth(m => m-1)
+            if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1) }
+            else setCalMonth(m => m - 1)
           }}>‹</button>
           <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: 1 }}>
             {MESECI[calMonth].toUpperCase()} {calYear}
           </span>
           <button className="week-nav-btn" onClick={() => {
-            if (calMonth === 11) { setCalMonth(0); setCalYear(y => y+1) }
-            else setCalMonth(m => m+1)
+            if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1) }
+            else setCalMonth(m => m + 1)
           }}>›</button>
         </div>
 
@@ -142,7 +142,7 @@ export default function Termini({ profil, showToast }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
           {cells.map((d, i) => {
             if (!d) return <div key={i} />
-            const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+            const ds = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
             const isPast = ds < todayFull
             const hasFree = prostiDnevi.has(ds)
             const isToday = ds === todayFull
@@ -156,7 +156,7 @@ export default function Termini({ profil, showToast }) {
                   setSelectedDay(ds)
                   const ws = getWeekStart(ds)
                   const curWs = getWeekStart(todayS)
-                  const diff = Math.round((new Date(ws) - new Date(curWs)) / (7*24*3600*1000))
+                  const diff = Math.round((new Date(ws) - new Date(curWs)) / (7 * 24 * 3600 * 1000))
                   if (diff >= 0) setWeekOffset(diff)
                 }
               }} style={{
@@ -237,9 +237,9 @@ export default function Termini({ profil, showToast }) {
       await supabase.from('termini').update({ zaseden: true }).eq('id', selected)
       if (termin.gcal_id) {
         const ime = `${profil.ime} ${profil.priimek}`
-        fetch(`${APPS_SCRIPT_URL}?action=rezerviraj&gcalId=${encodeURIComponent(termin.gcal_id)}&ime=${encodeURIComponent(ime)}`).catch(() => {})
+        fetch(`${APPS_SCRIPT_URL}?action=rezerviraj&gcalId=${encodeURIComponent(termin.gcal_id)}&ime=${encodeURIComponent(ime)}`).catch(() => { })
       }
-      setPotrjeno({ datum: termin.datum, cas: termin.cas_zacetek.slice(0,5) })
+      setPotrjeno({ datum: termin.datum, cas: termin.cas_zacetek.slice(0, 5) })
       setSelected(null)
       await loadData()
     }
@@ -249,10 +249,10 @@ export default function Termini({ profil, showToast }) {
   if (loading) return <div className="page"><div className="empty">Nalaganje...</div></div>
 
   const w0 = weekDates[0], w6 = weekDates[6]
-  const d0 = new Date(w0+'T00:00:00'), d6 = new Date(w6+'T00:00:00')
+  const d0 = new Date(w0 + 'T00:00:00'), d6 = new Date(w6 + 'T00:00:00')
   const weekLabel = selectedDay
     ? formatDatum(selectedDay)
-    : `${d0.getDate()}.${d0.getMonth()+1} – ${d6.getDate()}.${d6.getMonth()+1}`
+    : `${d0.getDate()}.${d0.getMonth() + 1} – ${d6.getDate()}.${d6.getMonth() + 1}`
 
   return (
     <div className="page">
@@ -276,9 +276,9 @@ export default function Termini({ profil, showToast }) {
           </h3>
           {!selectedDay && (
             <div className="week-nav">
-              <button onClick={() => { if (weekOffset > 0) setWeekOffset(o => o-1) }}>‹</button>
+              <button onClick={() => { if (weekOffset > 0) setWeekOffset(o => o - 1) }}>‹</button>
               <div className="week-label">{weekLabel}</div>
-              <button onClick={() => setWeekOffset(o => o+1)}>›</button>
+              <button onClick={() => setWeekOffset(o => o + 1)}>›</button>
             </div>
           )}
         </div>
@@ -291,8 +291,8 @@ export default function Termini({ profil, showToast }) {
         ) : (
           <div className="slots-grid">
             {vidniTermini.map(t => {
-              const casKonec = t.cas_konec || addMinutes(t.cas_zacetek.slice(0,5), 100)
-              const timeLabel = `${t.cas_zacetek.slice(0,5)} – ${casKonec.slice(0,5)}`
+              const casKonec = t.cas_konec || addMinutes(t.cas_zacetek.slice(0, 5), 100)
+              const timeLabel = `${t.cas_zacetek.slice(0, 5)} – ${casKonec.slice(0, 5)}`
               const isMoj = mojeRez.has(t.id)
               const isSelected = selected === t.id
               return (
@@ -321,7 +321,7 @@ export default function Termini({ profil, showToast }) {
           fontFamily: 'DM Mono', fontSize: '0.85rem'
         }}>
           Izbrano: <strong style={{ color: 'var(--accent-bright)' }}>
-            {(() => { const t = termini.find(x => x.id === selected); return t ? `${formatDatum(t.datum)}, ${t.cas_zacetek.slice(0,5)}` : '' })()}
+            {(() => { const t = termini.find(x => x.id === selected); return t ? `${formatDatum(t.datum)}, ${t.cas_zacetek.slice(0, 5)}` : '' })()}
           </strong>
         </div>
       )}
@@ -335,6 +335,42 @@ export default function Termini({ profil, showToast }) {
         rezerviraj najbližji možni termin in stopite v stik z inštruktorjem<br />
         za morebitno prilagoditev.
       </p>
+
+      {/* MOJE REZERVACIJE */}
+      {rezervacije.filter(r => r.termini?.datum >= todayS).length > 0 && (
+        <div className="form-box" style={{ marginTop: 20 }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '2.5px', color: 'var(--muted)' }}>
+            Moje rezervacije
+          </h3>
+          <div className="slots-grid">
+            {rezervacije
+              .filter(r => r.termini?.datum >= todayS)
+              .sort((a, b) => {
+                const da = (a.termini?.datum || '') + (a.termini?.cas_zacetek || '')
+                const db = (b.termini?.datum || '') + (b.termini?.cas_zacetek || '')
+                return da > db ? 1 : -1
+              })
+              .map(r => {
+                const t = r.termini
+                if (!t) return null
+                const casKonec = addMinutes(t.cas_zacetek.slice(0, 5), 100)
+                return (
+                  <div key={r.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'rgba(34,211,238,0.06)', border: '1px solid rgba(34,211,238,0.2)',
+                    borderRadius: 10, padding: '14px 16px'
+                  }}>
+                    <div>
+                      <div className="slot-time">{t.cas_zacetek.slice(0, 5)} – {casKonec}</div>
+                      <div className="slot-date">{formatDatum(t.datum)}</div>
+                    </div>
+                    <span className="badge badge-moja">Rezervirano</span>
+                  </div>
+                )
+              })}
+          </div>
+        </div>
+      )}
 
       {/* POTRDITVENI MODAL */}
       {potrjeno && (
