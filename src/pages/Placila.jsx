@@ -66,6 +66,9 @@ export default function Placila() {
             <div><span style={{ color: 'var(--text)' }}>Namen:</span> Moto ure</div>
             <div><span style={{ color: 'var(--text)' }}>Referenca:</span> SI00 008</div>
             <div><span style={{ color: 'var(--accent-bright)', fontSize: '1rem', fontWeight: 700 }}>Znesek: {skupaj} €</span></div>
+            <div style={{ marginTop: 6, fontSize: '0.75rem', color: 'var(--accent2)', fontFamily: 'DM Mono' }}>
+              ⚠️ Znesek morate ročno napisati ob plačilu UPN.
+            </div>
           </div>
         </div>
       </div>
