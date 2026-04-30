@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
         } catch(e) {
           console.error(`Push exception za ${k.email}:`, e)
         }
-      } else {
+/*      } else {
         // Ni subscriptiona — pošlji email
         try {
           const res = await fetch('https://api.resend.com/emails', {
@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
           console.error(`Email exception za ${k.email}:`, e)
         }
       }
-    }
+    }*/
 
     console.log(`Push: ${pushSent}, Email: ${emailSent}, tip: ${tip}`)
     return new Response(JSON.stringify({ pushSent, emailSent }), {
