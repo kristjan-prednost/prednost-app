@@ -1,55 +1,6 @@
-import * as jose from 'https://deno.land/x/jose@v4.15.4/index.ts'
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-async function generateVapidHeaders(endpoint: string, vapidPublic: string, vapidPrivate: string) {
-  const audience = new URL(endpoint).origin
-
-  // Pretvori raw base64url private key
-  const rawPrivate = Uint8Array.from(
-    atob(vapidPrivate.replace(/-/g, '+').replace(/_/g, '/')),
-    c => c.charCodeAt(0)
-  )
-
-  // Pretvori raw base64url public key  
-  const rawPublic = Uint8Array.from(
-    atob(vapidPublic.replace(/-/g, '+').replace(/_/g, '/')),
-    c => c.charCodeAt(0)
-  )
-
-  // Uvozi kot JWK
-  const privateKey = await crypto.subtle.importKey(
-    'jwk',
-    {
-      kty: 'EC',
-      crv: 'P-256',
-      x: btoa(String.fromCharCode(...rawPublic.slice(1, 33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-      y: btoa(String.fromCharCode(...rawPublic.slice(33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-      d: vapidPrivate,
-      key_ops: ['sign'],
-      ext: true,
-    },
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
-  )
-
-  const jwt = await new jose.SignJWT({})
-    .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
-    .setAudience(audience)
-    .setSubject('mailto:noreply@prednost-termini.si')
-    .setExpirationTime('12h')
-    .setIssuedAt()
-    .sign(privateKey)
-
-  return {
-    'Authorization': `vapid t=${jwt}, k=${vapidPublic}`,
-    'Content-Type': 'application/octet-stream',
-    'TTL': '86400',
-  }
 }
 
 Deno.serve(async (req) => {
@@ -62,8 +13,7 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY')!
-    const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 
     const filter = kandidat_id
       ? `vloga=eq.kandidat&id=eq.${kandidat_id}`
@@ -83,55 +33,66 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Pridobi push subscriptions
-    const subRes = await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?select=*`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-      }
-    })
-    const subscriptions = await subRes.json()
-    const subMap = new Map(subscriptions.map((s: any) => [s.kandidat_id, s.subscription]))
-
-    let title = ''
-    let body = ''
+    let subject = ''
+    let html = ''
 
     if (tip === 'prost_termin') {
-      title = '📅 Sprostil se je termin vožnje!'
-      body = 'Prijavite se na prednost-termini.si in rezervirajte termin.'
+      subject = '📅 Sprostil se je termin vožnje – Šola vožnje Prednost'
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: #3b82f6;">Sprostil se je termin vožnje!</h2>
+          <p>Pozdravljeni,</p>
+          <p>obvestiti vas želimo, da se je sprostil termin vožnje.</p>
+          <p>Prijavite se čim prej na <a href="https://prednost-termini.si" style="color: #3b82f6;">prednost-termini.si</a> in rezervirajte termin.</p>
+          <p>Srečno pri vožnji! 🚗</p>
+          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
+        </div>
+      `
     } else if (tip === 'opomnik') {
-      title = '🚗 Opomnik – jutri imaš termin vožnje!'
-      body = `Termin: ${termin_datum} ob ${termin_cas}`
+      subject = '🚗 Opomnik – jutri imaš termin vožnje'
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+          <h2 style="color: #3b82f6;">Opomnik za termin vožnje</h2>
+          <p>Pozdravljeni,</p>
+          <p>jutri imaš termin vožnje ob <strong>${termin_cas}</strong>.</p>
+          <p>Datum: <strong>${termin_datum}</strong></p>
+          <p>Srečno! 🚗</p>
+          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
+        </div>
+      `
     }
 
-    let pushSent = 0
-
+    let sent = 0
     for (const k of kandidati) {
-      const sub = subMap.get(k.id)
-      if (!sub) continue
-
       try {
-        const payload = JSON.stringify({ title, body, url: 'https://prednost-termini.si' })
-        const headers = await generateVapidHeaders(sub.endpoint, VAPID_PUBLIC, VAPID_PRIVATE)
-
-        const pushRes = await fetch(sub.endpoint, {
+        // Delay da se izognemo rate limitu
+        if (sent > 0) await new Promise(r => setTimeout(r, 500))
+        
+        const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers,
-          body: payload
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Šola vožnje Prednost <noreply@prednost-termini.si>',
+            to: k.email,
+            subject,
+            html
+          })
         })
-        console.log(`Push za ${k.email}: ${pushRes.status}`)
-        if (pushRes.ok || pushRes.status === 201) pushSent++
+        if (res.ok) sent++
         else {
-          const err = await pushRes.text()
-          console.error(`Push napaka za ${k.email}:`, err)
+          const err = await res.text()
+          console.error(`Email napaka za ${k.email}:`, err)
         }
       } catch(e) {
-        console.error(`Push exception za ${k.email}:`, e)
+        console.error(`Email exception za ${k.email}:`, e)
       }
     }
 
-    console.log(`Push: ${pushSent}, tip: ${tip}`)
-    return new Response(JSON.stringify({ pushSent }), {
+    console.log(`Poslano ${sent}/${kandidati.length} emailov, tip: ${tip}`)
+    return new Response(JSON.stringify({ sent }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
