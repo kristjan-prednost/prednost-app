@@ -7,10 +7,36 @@ const corsHeaders = {
 
 async function generateVapidHeaders(endpoint: string, vapidPublic: string, vapidPrivate: string) {
   const audience = new URL(endpoint).origin
-  const privateKey = await jose.importPKCS8(
-    `-----BEGIN PRIVATE KEY-----\n${vapidPrivate}\n-----END PRIVATE KEY-----`,
-    'ES256'
+
+  // Pretvori raw base64url private key
+  const rawPrivate = Uint8Array.from(
+    atob(vapidPrivate.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
   )
+
+  // Pretvori raw base64url public key  
+  const rawPublic = Uint8Array.from(
+    atob(vapidPublic.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
+  )
+
+  // Uvozi kot JWK
+  const privateKey = await crypto.subtle.importKey(
+    'jwk',
+    {
+      kty: 'EC',
+      crv: 'P-256',
+      x: btoa(String.fromCharCode(...rawPublic.slice(1, 33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
+      y: btoa(String.fromCharCode(...rawPublic.slice(33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
+      d: vapidPrivate,
+      key_ops: ['sign'],
+      ext: true,
+    },
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  )
+
   const jwt = await new jose.SignJWT({})
     .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
     .setAudience(audience)

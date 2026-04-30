@@ -87,11 +87,12 @@ export default function App() {
       const { data: { user } } = await supabase.auth.getUser()
       await supabase.from('push_subscriptions').upsert({
         kandidat_id: user.id,
+        endpoint: subscription.endpoint,
         subscription: subscription.toJSON()
-      }, { onConflict: 'kandidat_id' })
+      }, { onConflict: 'kandidat_id,endpoint' })
       setPushEnabled(true)
       showToast('Obvestila so vklopljena! 🔔')
-    } catch(e) {
+    } catch (e) {
       console.error('Push napaka:', e)
       showToast('Napaka pri vklopu obvestil.', 'error')
     }
