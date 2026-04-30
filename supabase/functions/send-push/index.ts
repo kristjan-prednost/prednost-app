@@ -36,7 +36,6 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
     const VAPID_PUBLIC = Deno.env.get('VAPID_PUBLIC_KEY')!
     const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
 
@@ -70,94 +69,43 @@ Deno.serve(async (req) => {
 
     let title = ''
     let body = ''
-    let subject = ''
-    let html = ''
 
     if (tip === 'prost_termin') {
       title = '📅 Sprostil se je termin vožnje!'
       body = 'Prijavite se na prednost-termini.si in rezervirajte termin.'
-      subject = '📅 Sprostil se je termin vožnje – Šola vožnje Prednost'
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
-          <h2 style="color: #3b82f6;">Sprostil se je termin vožnje!</h2>
-          <p>Pozdravljeni,</p>
-          <p>obvestiti vas želimo, da se je sprostil termin vožnje.</p>
-          <p>Prijavite se čim prej na <a href="https://prednost-termini.si" style="color: #3b82f6;">prednost-termini.si</a> in rezervirajte termin.</p>
-          <p>Srečno pri vožnji! 🚗</p>
-          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
-        </div>
-      `
     } else if (tip === 'opomnik') {
       title = '🚗 Opomnik – jutri imaš termin vožnje!'
       body = `Termin: ${termin_datum} ob ${termin_cas}`
-      subject = '🚗 Opomnik – jutri imaš termin vožnje'
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
-          <h2 style="color: #3b82f6;">Opomnik za termin vožnje</h2>
-          <p>Pozdravljeni,</p>
-          <p>jutri imaš termin vožnje ob <strong>${termin_cas}</strong>.</p>
-          <p>Datum: <strong>${termin_datum}</strong></p>
-          <p>Srečno! 🚗</p>
-          <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
-        </div>
-      `
     }
 
     let pushSent = 0
-    let emailSent = 0
 
     for (const k of kandidati) {
       const sub = subMap.get(k.id)
+      if (!sub) continue
 
-      if (sub) {
-        // Pošlji push notifikacijo
-        try {
-          const payload = JSON.stringify({ title, body, url: 'https://prednost-termini.si' })
-          const headers = await generateVapidHeaders(sub.endpoint, VAPID_PUBLIC, VAPID_PRIVATE)
+      try {
+        const payload = JSON.stringify({ title, body, url: 'https://prednost-termini.si' })
+        const headers = await generateVapidHeaders(sub.endpoint, VAPID_PUBLIC, VAPID_PRIVATE)
 
-          const pushRes = await fetch(sub.endpoint, {
-            method: 'POST',
-            headers,
-            body: payload
-          })
-          console.log(`Push za ${k.email}: ${pushRes.status}`)
-          if (pushRes.ok || pushRes.status === 201) pushSent++
-          else {
-            const err = await pushRes.text()
-            console.error(`Push napaka za ${k.email}:`, err)
-          }
-        } catch(e) {
-          console.error(`Push exception za ${k.email}:`, e)
+        const pushRes = await fetch(sub.endpoint, {
+          method: 'POST',
+          headers,
+          body: payload
+        })
+        console.log(`Push za ${k.email}: ${pushRes.status}`)
+        if (pushRes.ok || pushRes.status === 201) pushSent++
+        else {
+          const err = await pushRes.text()
+          console.error(`Push napaka za ${k.email}:`, err)
         }
-/*      } else {
-        // Ni subscriptiona — pošlji email
-        try {
-          const res = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${RESEND_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              from: 'Šola vožnje Prednost <noreply@prednost-termini.si>',
-              to: k.email,
-              subject,
-              html
-            })
-          })
-          if (res.ok) emailSent++
-          else {
-            const err = await res.text()
-            console.error(`Email napaka za ${k.email}:`, err)
-          }
-        } catch(e) {
-          console.error(`Email exception za ${k.email}:`, e)
-        }
+      } catch(e) {
+        console.error(`Push exception za ${k.email}:`, e)
       }
-    }*/
+    }
 
-    console.log(`Push: ${pushSent}, Email: ${emailSent}, tip: ${tip}`)
-    return new Response(JSON.stringify({ pushSent, emailSent }), {
+    console.log(`Push: ${pushSent}, tip: ${tip}`)
+    return new Response(JSON.stringify({ pushSent }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
