@@ -271,20 +271,20 @@ export default function Admin({ showToast }) {
     const { error } = await supabase.from('rezervacije').delete().eq('id', id)
     if (error) { showToast('Napaka pri preklicu.', 'error'); return }
     if (rez?.termin_id) await supabase.from('termini').update({ zaseden: false }).eq('id', rez.termin_id)
-    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => { })
+    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => {})
 
-//    // Pošlji push notifikacijo vsem kandidatom
-//    try {
-//      await supabase.functions.invoke('send-push', {
-//        body: { tip: 'prost_termin' }
-//      })
-//    } catch (e) {
-//      console.error('Push napaka:', e)
-//    }
-//
-//    showToast('Rezervacija preklicana.')
-//    loadData()
-//  }
+    // Pošlji push notifikacijo vsem kandidatom
+    try {
+      await supabase.functions.invoke('send-push', {
+        body: { tip: 'prost_termin' }
+      })
+    } catch (e) {
+      console.error('Push napaka:', e)
+    }
+
+    showToast('Rezervacija preklicana.')
+    loadData()
+  }
 
   async function spremeniGlobalLimit(nov) {
     if (nov < 1) return
