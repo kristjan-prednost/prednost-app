@@ -32,7 +32,7 @@ const PRIVZETO_GRADIVO = [
     id: '1',
     naslov: 'Osnovne informacije Dacia Sandero',
     tip: 'prirocnik',
-    url: 'https://drive.google.com/file/d/17mF1Pg09I25ufwSoODiV9ZUamrJl20X0/view?usp=drive_link',
+    url: 'https://drive.google.com/file/d/17ZSSvxYqUNhHdjxQ36s72vfvhnu-mr3k/view?usp=drive_link',
     opis: 'Tehnični podatki in osnovna navodila za vozilo'
   },
   {
