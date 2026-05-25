@@ -60,6 +60,18 @@ Deno.serve(async (req) => {
           <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
         </div>
       `
+    } else if (tip === 'novi_termini') {
+      subject = '📅 Novi termini vožnje – Šola vožnje Prednost'
+      html = `
+    <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+      <h2 style="color: #3b82f6;">Na voljo so novi termini vožnje!</h2>
+      <p>Pozdravljeni,</p>
+      <p>obveščamo vas, da smo dodali nove termine vožnje.</p>
+      <p>Prijavite se na <a href="https://prednost-termini.si" style="color: #3b82f6;">prednost-termini.si</a> in rezervirajte termin.</p>
+      <p>Srečno pri vožnji! 🚗</p>
+      <p style="color: #888; font-size: 12px;">Šola vožnje Prednost</p>
+    </div>
+    `
     }
 
     let sent = 0
@@ -67,7 +79,7 @@ Deno.serve(async (req) => {
       try {
         // Delay da se izognemo rate limitu
         if (sent > 0) await new Promise(r => setTimeout(r, 500))
-        
+
         const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -86,7 +98,7 @@ Deno.serve(async (req) => {
           const err = await res.text()
           console.error(`Email napaka za ${k.email}:`, err)
         }
-      } catch(e) {
+      } catch (e) {
         console.error(`Email exception za ${k.email}:`, e)
       }
     }
@@ -96,7 +108,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
-  } catch(e) {
+  } catch (e) {
     console.error('Glavna napaka:', String(e))
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,

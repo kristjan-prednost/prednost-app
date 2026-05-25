@@ -271,7 +271,7 @@ export default function Admin({ showToast }) {
     const { error } = await supabase.from('rezervacije').delete().eq('id', id)
     if (error) { showToast('Napaka pri preklicu.', 'error'); return }
     if (rez?.termin_id) await supabase.from('termini').update({ zaseden: false }).eq('id', rez.termin_id)
-    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => {})
+    if (rez?.termini?.gcal_id) fetch(`${APPS_SCRIPT_URL}?action=preklic&gcalId=${encodeURIComponent(rez.termini.gcal_id)}`).catch(() => { })
 
     // Pošlji push notifikacijo vsem kandidatom
     try {
@@ -329,216 +329,233 @@ export default function Admin({ showToast }) {
           <h1 style={{ fontSize: '2rem', fontWeight: 600 }}>Admin <span style={{ color: 'var(--accent-bright)' }}>plošča</span></h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.82rem', fontFamily: 'DM Mono', marginTop: 6 }}>Pregled rezervacij in upravljanje terminov</p>
         </div>
-        <button onClick={syncCalendar} disabled={syncing} style={{
-          padding: '10px 20px', background: 'rgba(6,182,212,0.12)', color: 'var(--accent3)',
-          border: '1px solid rgba(6,182,212,0.3)', borderRadius: 10,
-          fontFamily: 'Syne', fontSize: '0.88rem', fontWeight: 700,
-          cursor: syncing ? 'wait' : 'pointer', opacity: syncing ? 0.6 : 1, transition: 'all 0.2s'
-        }}>
-          {syncing ? '↻ Sinhronizacija...' : '↻ Osveži iz Calendarja'}
-        </button>
-      </div>
-
-      {/* STATISTIKE */}
-      <div className="stats-row" style={{ marginBottom: 24 }}>
-        <div className="stat-box"><div className="stat-num">{prihodnje.length}</div><div className="stat-lbl">Prihodnjih rezervacij</div></div>
-        <div className="stat-box"><div className="stat-num">{danes.length}</div><div className="stat-lbl">Danes</div></div>
-        <div className="stat-box"><div className="stat-num">{kandidati.length}</div><div className="stat-lbl">Kandidatov</div></div>
-      </div>
-
-      {/* SEZNAM KANDIDATOV */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <h2 style={{ marginBottom: 16 }}>Seznam kandidatov</h2>
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Ime in priimek</th>
-              <th>Email</th>
-              <th>Tedenski limit</th>
-              <th>Rezervacije</th>
-            </tr>
-          </thead>
-          <tbody>
-            {kandidati.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: 30 }}>Ni kandidatov.</td></tr>
-            ) : kandidati.map((k, i) => (
-              <tr key={k.id}>
-                <td style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>{i + 1}</td>
-                <td><div style={{ fontWeight: 600 }}>{k.ime} {k.priimek}</div></td>
-                <td style={{ color: 'var(--muted)', fontSize: '0.78rem', fontFamily: 'DM Mono' }}>{k.email}</td>
-                <td>
-                  <span style={{ color: 'var(--accent-bright)', fontFamily: 'DM Mono', fontWeight: 700 }}>
-                    {getLimitZaKandidata(k.id)}x
-                  </span>
-                </td>
-                <td>
-                  <span style={{ fontFamily: 'DM Mono', fontSize: '0.82rem' }}>
-                    {getRezervacijeZaKandidata(k.id).length}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* GLOBALNI LIMIT + LIMIT PO KANDIDATU */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-        <div className="card">
-          <h2>Globalni tedenski limit</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button onClick={() => spremeniGlobalLimit(globalLimit - 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)', fontSize: '1.2rem', cursor: 'pointer' }}>−</button>
-            <span style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>{globalLimit}</span>
-            <button onClick={() => spremeniGlobalLimit(globalLimit + 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
-            <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono' }}>vožnji na teden (privzeto)</span>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>Limit po kandidatu</h2>
-          <KandidatSelector
-            kandidati={kandidati}
-            value={selectedKandidat}
-            onSelect={setSelectedKandidat}
-            placeholder="Izberi kandidata..."
-          />
-          {selectedKandidat && (() => {
-            const k = kandidati.find(x => x.id === selectedKandidat)
-            const limit = getLimitZaKandidata(selectedKandidat)
-            return (
-              <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: 16, marginTop: 8 }}>
-                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit - 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>−</button>
-                  <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>{limit}</span>
-                  <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit + 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>+</button>
-                  <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono' }}>vožnji na teden</span>
-                </div>
-              </div>
-            )
-          })()}
-        </div>
-      </div>
-
-      {/* REZERVACIJE */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-          <h2 style={{ margin: 0 }}>Rezervacije kandidatov</h2>
-          <select value={filter} onChange={e => setFilter(e.target.value)} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 8, padding: '7px 12px', color: 'var(--text)',
-            fontFamily: 'DM Mono', fontSize: '0.8rem', outline: 'none'
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button onClick={syncCalendar} disabled={syncing} style={{
+            padding: '10px 20px', background: 'rgba(6,182,212,0.12)', color: 'var(--accent3)',
+            border: '1px solid rgba(6,182,212,0.3)', borderRadius: 10,
+            fontFamily: 'Syne', fontSize: '0.88rem', fontWeight: 700,
+            cursor: syncing ? 'wait' : 'pointer', opacity: syncing ? 0.6 : 1, transition: 'all 0.2s'
           }}>
-            <option value="vse">Vsi kandidati</option>
-            {kandidati.map(k => (<option key={k.id} value={k.id}>{k.ime} {k.priimek}</option>))}
-          </select>
+            {syncing ? '↻ Sinhronizacija...' : '↻ Osveži iz Calendarja'}
+          </button>
+          <button onClick={async () => {
+            if (!confirm('Poslati obvestilo vsem kandidatom o novih terminih?')) return
+            try {
+              await supabase.functions.invoke('send-push', { body: { tip: 'novi_termini' } })
+              showToast('Obvestilo o novih terminih poslano!')
+            } catch (e) {
+              showToast('Napaka pri pošiljanju.', 'error')
+            }
+          }} style={{
+            padding: '10px 20px', background: 'rgba(59,130,246,0.12)', color: 'var(--accent-bright)',
+            border: '1px solid rgba(59,130,246,0.3)', borderRadius: 10,
+            fontFamily: 'Syne', fontSize: '0.88rem', fontWeight: 700,
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}>
+            📅 Novi termini
+          </button>
         </div>
-        <div style={{ overflowX: 'auto' }}>
+
+        {/* STATISTIKE */}
+        <div className="stats-row" style={{ marginBottom: 24 }}>
+          <div className="stat-box"><div className="stat-num">{prihodnje.length}</div><div className="stat-lbl">Prihodnjih rezervacij</div></div>
+          <div className="stat-box"><div className="stat-num">{danes.length}</div><div className="stat-lbl">Danes</div></div>
+          <div className="stat-box"><div className="stat-num">{kandidati.length}</div><div className="stat-lbl">Kandidatov</div></div>
+        </div>
+
+        {/* SEZNAM KANDIDATOV */}
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h2 style={{ marginBottom: 16 }}>Seznam kandidatov</h2>
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Kandidat</th><th>Datum termina</th><th>Ura</th><th>Tip</th>
-                <th>Rezervirano</th><th>Rez. ta teden</th><th>Akcija</th>
+                <th>#</th>
+                <th>Ime in priimek</th>
+                <th>Email</th>
+                <th>Tedenski limit</th>
+                <th>Rezervacije</th>
               </tr>
             </thead>
             <tbody>
-              {filtrirane.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--muted)', padding: 30 }}>Ni prihodnjih rezervacij.</td></tr>
-              ) : filtrirane
-                .sort((a, b) => (a.termini?.datum + a.termini?.cas_zacetek) > (b.termini?.datum + b.termini?.cas_zacetek) ? 1 : -1)
-                .map(r => {
-                  const kandId = r.profili?.id
-                  const now = new Date(); now.setHours(0, 0, 0, 0)
-                  const day = now.getDay() === 0 ? 7 : now.getDay()
-                  const mon = new Date(now); mon.setDate(now.getDate() - day + 1)
-                  const sun = new Date(now); sun.setDate(now.getDate() - day + 7)
-                  const rezTaTeden = getRezervacijeZaKandidata(kandId).filter(x => {
-                    const d = x.termini?.datum || ''
-                    return d >= dateStr_(mon) && d <= dateStr_(sun)
-                  }).length
-                  const limit = getLimitZaKandidata(kandId)
-                  return (
-                    <tr key={r.id}>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{r.profili?.ime} {r.profili?.priimek}</div>
-                        <div style={{ color: 'var(--muted)', fontSize: '0.72rem' }}>{r.profili?.email}</div>
-                      </td>
-                      <td>{r.termini?.datum ? formatDatum(r.termini.datum) : '–'}</td>
-                      <td>{r.termini?.cas_zacetek?.slice(0, 5) || '–'}</td>
-                      <td>
-                        <span style={{
-                          fontSize: '0.7rem', padding: '2px 8px', borderRadius: 100,
-                          background: r.termini?.tip === 'izpit' ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
-                          color: r.termini?.tip === 'izpit' ? 'var(--accent2)' : 'var(--accent-bright)', fontWeight: 700
-                        }}>
-                          {r.termini?.tip === 'izpit' ? 'Izpit' : 'Vožnja'}
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{formatCas(r.created_at)}</td>
-                      <td>
-                        <span style={{ color: rezTaTeden >= limit ? 'var(--danger)' : 'var(--accent-bright)', fontWeight: 700 }}>
-                          {rezTaTeden}/{limit}
-                        </span>
-                      </td>
-                      <td><button className="btn-danger" onClick={() => prekliziRezervacijo(r.id)}>Prekliči</button></td>
-                    </tr>
-                  )
-                })}
+              {kandidati.length === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--muted)', padding: 30 }}>Ni kandidatov.</td></tr>
+              ) : kandidati.map((k, i) => (
+                <tr key={k.id}>
+                  <td style={{ color: 'var(--muted)', fontSize: '0.75rem' }}>{i + 1}</td>
+                  <td><div style={{ fontWeight: 600 }}>{k.ime} {k.priimek}</div></td>
+                  <td style={{ color: 'var(--muted)', fontSize: '0.78rem', fontFamily: 'DM Mono' }}>{k.email}</td>
+                  <td>
+                    <span style={{ color: 'var(--accent-bright)', fontFamily: 'DM Mono', fontWeight: 700 }}>
+                      {getLimitZaKandidata(k.id)}x
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{ fontFamily: 'DM Mono', fontSize: '0.82rem' }}>
+                      {getRezervacijeZaKandidata(k.id).length}
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* ODSTRANI KANDIDATA */}
-      <div className="card" style={{ marginTop: 20 }}>
-        <h2>Odstrani kandidata</h2>
-        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono', marginBottom: 16, lineHeight: 1.7 }}>
-          Izbriši kandidata ki je že opravil izpit. Izbrisane bodo vse njegove rezervacije in profil.
-        </p>
-        <KandidatSelector
-          kandidati={kandidati}
-          value={izbrisKandidat}
-          onSelect={setIzbrisKandidat}
-          placeholder="Izberi kandidata za brisanje..."
-        />
-        {izbrisKandidat && (
-          <div style={{
-            background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)',
-            borderRadius: 8, padding: '12px 16px', margin: '12px 0',
-            fontFamily: 'DM Mono', fontSize: '0.82rem', color: 'var(--muted)'
-          }}>
-            Izbran: <strong style={{ color: 'var(--danger)' }}>
-              {kandidati.find(k => k.id === izbrisKandidat)?.ime} {kandidati.find(k => k.id === izbrisKandidat)?.priimek}
-            </strong>
+        {/* GLOBALNI LIMIT + LIMIT PO KANDIDATU */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          <div className="card">
+            <h2>Globalni tedenski limit</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <button onClick={() => spremeniGlobalLimit(globalLimit - 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)', fontSize: '1.2rem', cursor: 'pointer' }}>−</button>
+              <span style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>{globalLimit}</span>
+              <button onClick={() => spremeniGlobalLimit(globalLimit + 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)', fontSize: '1.2rem', cursor: 'pointer' }}>+</button>
+              <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono' }}>vožnji na teden (privzeto)</span>
+            </div>
           </div>
-        )}
-        <button onClick={async () => {
-          if (!izbrisKandidat) { showToast('Izberi kandidata.', 'error'); return }
-          const k = kandidati.find(x => x.id === izbrisKandidat)
-          if (!confirm(`Res želiš izbrisati kandidata ${k?.ime} ${k?.priimek}? To je nepovrativo!`)) return
-          const { error } = await supabase.rpc('izbrisi_kandidata', { kandidat_id: izbrisKandidat })
-          if (error) showToast('Napaka pri brisanju: ' + error.message, 'error')
-          else {
-            showToast('Kandidat uspešno odstranjen.')
-            setIzbrisKandidat('')
-            loadData()
-          }
-        }} style={{
-          padding: '10px 20px', background: 'rgba(239,68,68,0.12)',
-          color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)',
-          borderRadius: 8, fontFamily: 'Syne', fontSize: '0.88rem',
-          fontWeight: 700, cursor: 'pointer'
-        }}>
-          🗑 Izbriši kandidata
-        </button>
-      </div>
 
-      {/* VPRAŠANJA ZA KVIZ */}
-      <div className="card" style={{ marginTop: 20 }}>
-        <h2>Vprašanja za kviz</h2>
-        <VprasanjaPanel showToast={showToast} />
+          <div className="card">
+            <h2>Limit po kandidatu</h2>
+            <KandidatSelector
+              kandidati={kandidati}
+              value={selectedKandidat}
+              onSelect={setSelectedKandidat}
+              placeholder="Izberi kandidata..."
+            />
+            {selectedKandidat && (() => {
+              const k = kandidati.find(x => x.id === selectedKandidat)
+              const limit = getLimitZaKandidata(selectedKandidat)
+              return (
+                <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: 16, marginTop: 8 }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--muted)', fontFamily: 'DM Mono', marginBottom: 12 }}>{k?.email}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit - 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>−</button>
+                    <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-bright)', minWidth: 30, textAlign: 'center' }}>{limit}</span>
+                    <button onClick={() => spremeniLimitKandidata(selectedKandidat, limit + 1)} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: '1.2rem' }}>+</button>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono' }}>vožnji na teden</span>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+
+        {/* REZERVACIJE */}
+        <div className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+            <h2 style={{ margin: 0 }}>Rezervacije kandidatov</h2>
+            <select value={filter} onChange={e => setFilter(e.target.value)} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '7px 12px', color: 'var(--text)',
+              fontFamily: 'DM Mono', fontSize: '0.8rem', outline: 'none'
+            }}>
+              <option value="vse">Vsi kandidati</option>
+              {kandidati.map(k => (<option key={k.id} value={k.id}>{k.ime} {k.priimek}</option>))}
+            </select>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Kandidat</th><th>Datum termina</th><th>Ura</th><th>Tip</th>
+                  <th>Rezervirano</th><th>Rez. ta teden</th><th>Akcija</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtrirane.length === 0 ? (
+                  <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--muted)', padding: 30 }}>Ni prihodnjih rezervacij.</td></tr>
+                ) : filtrirane
+                  .sort((a, b) => (a.termini?.datum + a.termini?.cas_zacetek) > (b.termini?.datum + b.termini?.cas_zacetek) ? 1 : -1)
+                  .map(r => {
+                    const kandId = r.profili?.id
+                    const now = new Date(); now.setHours(0, 0, 0, 0)
+                    const day = now.getDay() === 0 ? 7 : now.getDay()
+                    const mon = new Date(now); mon.setDate(now.getDate() - day + 1)
+                    const sun = new Date(now); sun.setDate(now.getDate() - day + 7)
+                    const rezTaTeden = getRezervacijeZaKandidata(kandId).filter(x => {
+                      const d = x.termini?.datum || ''
+                      return d >= dateStr_(mon) && d <= dateStr_(sun)
+                    }).length
+                    const limit = getLimitZaKandidata(kandId)
+                    return (
+                      <tr key={r.id}>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{r.profili?.ime} {r.profili?.priimek}</div>
+                          <div style={{ color: 'var(--muted)', fontSize: '0.72rem' }}>{r.profili?.email}</div>
+                        </td>
+                        <td>{r.termini?.datum ? formatDatum(r.termini.datum) : '–'}</td>
+                        <td>{r.termini?.cas_zacetek?.slice(0, 5) || '–'}</td>
+                        <td>
+                          <span style={{
+                            fontSize: '0.7rem', padding: '2px 8px', borderRadius: 100,
+                            background: r.termini?.tip === 'izpit' ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
+                            color: r.termini?.tip === 'izpit' ? 'var(--accent2)' : 'var(--accent-bright)', fontWeight: 700
+                          }}>
+                            {r.termini?.tip === 'izpit' ? 'Izpit' : 'Vožnja'}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{formatCas(r.created_at)}</td>
+                        <td>
+                          <span style={{ color: rezTaTeden >= limit ? 'var(--danger)' : 'var(--accent-bright)', fontWeight: 700 }}>
+                            {rezTaTeden}/{limit}
+                          </span>
+                        </td>
+                        <td><button className="btn-danger" onClick={() => prekliziRezervacijo(r.id)}>Prekliči</button></td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ODSTRANI KANDIDATA */}
+        <div className="card" style={{ marginTop: 20 }}>
+          <h2>Odstrani kandidata</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '0.8rem', fontFamily: 'DM Mono', marginBottom: 16, lineHeight: 1.7 }}>
+            Izbriši kandidata ki je že opravil izpit. Izbrisane bodo vse njegove rezervacije in profil.
+          </p>
+          <KandidatSelector
+            kandidati={kandidati}
+            value={izbrisKandidat}
+            onSelect={setIzbrisKandidat}
+            placeholder="Izberi kandidata za brisanje..."
+          />
+          {izbrisKandidat && (
+            <div style={{
+              background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 8, padding: '12px 16px', margin: '12px 0',
+              fontFamily: 'DM Mono', fontSize: '0.82rem', color: 'var(--muted)'
+            }}>
+              Izbran: <strong style={{ color: 'var(--danger)' }}>
+                {kandidati.find(k => k.id === izbrisKandidat)?.ime} {kandidati.find(k => k.id === izbrisKandidat)?.priimek}
+              </strong>
+            </div>
+          )}
+          <button onClick={async () => {
+            if (!izbrisKandidat) { showToast('Izberi kandidata.', 'error'); return }
+            const k = kandidati.find(x => x.id === izbrisKandidat)
+            if (!confirm(`Res želiš izbrisati kandidata ${k?.ime} ${k?.priimek}? To je nepovrativo!`)) return
+            const { error } = await supabase.rpc('izbrisi_kandidata', { kandidat_id: izbrisKandidat })
+            if (error) showToast('Napaka pri brisanju: ' + error.message, 'error')
+            else {
+              showToast('Kandidat uspešno odstranjen.')
+              setIzbrisKandidat('')
+              loadData()
+            }
+          }} style={{
+            padding: '10px 20px', background: 'rgba(239,68,68,0.12)',
+            color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.3)',
+            borderRadius: 8, fontFamily: 'Syne', fontSize: '0.88rem',
+            fontWeight: 700, cursor: 'pointer'
+          }}>
+            🗑 Izbriši kandidata
+          </button>
+        </div>
+
+        {/* VPRAŠANJA ZA KVIZ */}
+        <div className="card" style={{ marginTop: 20 }}>
+          <h2>Vprašanja za kviz</h2>
+          <VprasanjaPanel showToast={showToast} />
+        </div>
       </div>
-    </div>
-  )
+      )
 }
