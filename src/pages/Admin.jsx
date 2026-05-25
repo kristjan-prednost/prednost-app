@@ -557,5 +557,5 @@ export default function Admin({ showToast }) {
           <VprasanjaPanel showToast={showToast} />
         </div>
       </div>
-      )
+    )
 }
