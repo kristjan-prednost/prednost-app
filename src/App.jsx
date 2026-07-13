@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabase'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -12,6 +12,7 @@ import Napredek from './pages/Napredek'
 import Admin from './pages/Admin'
 import NapredekAdmin from './pages/NapredekAdmin'
 import Toast from './components/Toast'
+import ObvestiloModal from './components/ObvestiloModal'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -20,12 +21,26 @@ export default function App() {
   const [authView, setAuthView] = useState('login')
   const [toast, setToast] = useState({ msg: '', type: 'success', show: false })
   const [loading, setLoading] = useState(true)
-  const [jeResetStran, setJeResetStran] = useState(false)
+  const jeResetStran = window.location.hash.includes('type=recovery')
+  const [showObvestilo, setShowObvestilo] = useState(() => {
+    const danes = new Date().toISOString().slice(0, 10)
+    return localStorage.getItem('obvestilo_ukinitev_skrito') !== danes
+  })
+
+  function skrijObvestiloDanes() {
+    const danes = new Date().toISOString().slice(0, 10)
+    localStorage.setItem('obvestilo_ukinitev_skrito', danes)
+    setShowObvestilo(false)
+  }
+
+  const loadProfil = useCallback(async (uid) => {
+    const { data } = await supabase.from('profili').select('*').eq('id', uid).single()
+    setProfil(data)
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
-    const hash = window.location.hash
-    const isReset = hash.includes('type=recovery')
-    setJeResetStran(isReset)
+    const isReset = window.location.hash.includes('type=recovery')
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
@@ -34,18 +49,13 @@ export default function App() {
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_e, s) => {
+      const reset = window.location.hash.includes('type=recovery')
       setSession(s)
-      if (s && !jeResetStran) loadProfil(s.user.id)
+      if (s && !reset) loadProfil(s.user.id)
       else { setProfil(null); setLoading(false) }
     })
     return () => listener.subscription.unsubscribe()
-  }, [])
-
-  async function loadProfil(uid) {
-    const { data } = await supabase.from('profili').select('*').eq('id', uid).single()
-    setProfil(data)
-    setLoading(false)
-  }
+  }, [loadProfil])
 
   function showToast(msg, type = 'success') {
     setToast({ msg, type, show: true })
@@ -70,6 +80,7 @@ export default function App() {
       {authView === 'login'
         ? <Login onSwitch={() => setAuthView('register')} showToast={showToast} />
         : <Register onSwitch={() => setAuthView('login')} showToast={showToast} />}
+      {showObvestilo && <ObvestiloModal onClose={() => setShowObvestilo(false)} onHideToday={skrijObvestiloDanes} />}
       <Toast {...toast} />
     </>
   )
@@ -86,6 +97,7 @@ export default function App() {
       {tab === 'napredek' && !isAdmin && <Napredek profil={profil} showToast={showToast} />}
       {tab === 'admin' && isAdmin && <Admin showToast={showToast} />}
       {tab === 'napredek-admin' && isAdmin && <NapredekAdmin showToast={showToast} />}
+      {showObvestilo && <ObvestiloModal onClose={() => setShowObvestilo(false)} onHideToday={skrijObvestiloDanes} />}
       <Toast {...toast} />
     </>
   )
