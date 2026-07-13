@@ -5,7 +5,7 @@ export default function ObvestiloModal({ onClose, onHideToday }) {
         <div className="modal-badge">Pomembno obvestilo</div>
         <h2 className="modal-title">Aplikacija se ukinja</h2>
         <p className="modal-text">
-          Ta aplikacija <strong>Moj učitelj vožnje</strong> bo delovala do{' '}
+          Ta aplikacija <strong>PREDNOST-TERMINI</strong> bo delovala do{' '}
           <strong>konca julija 2026</strong>.
         </p>
         <p className="modal-text">
