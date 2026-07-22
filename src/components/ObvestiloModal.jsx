@@ -14,7 +14,7 @@ export default function ObvestiloModal({ onClose, onHideToday }) {
         </p>
         <p className="modal-text">
           Od avgusta dalje bomo delo nadaljevali na novi aplikaciji{' '}
-          <strong>Moj učitelj vožnje</strong>. Hvala za razumevanje!
+          <strong>mojučiteljvožnje.si</strong>. Prosim če si naredite račun na novi aplikaciji ter izberete mene kot učitelja vožnje. Hvala za razumevanje!
         </p>
         <button className="btn-primary" onClick={onClose}>
           Razumem
